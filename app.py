@@ -6,14 +6,37 @@ import re
 import io
 
 # ============================================
-# CONFIGURACIÓN DE PÁGINA
+# CONFIGURACIÓN DE PÁGINA (FIJO A LA IZQUIERDA)
 # ============================================
 st.set_page_config(
     page_title="Análisis Financiero Modelo 200",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="expanded" # Se abre expandido por defecto
 )
+
+# ============================================
+# CSS PARA FIJAR LA BARRA LATERAL (NO SE PUEDE OCULTAR)
+# ============================================
+st.markdown("""
+<style>
+    /* 1. Ocultar la flecha para cerrar la barra lateral (la que sale fuera) */
+    [data-testid="collapsedControl"] {
+        display: none !important;
+    }
+    
+    /* 2. Ocultar el botón interno de la barra lateral para cerrarla */
+    [data-testid="stSidebarHeader"] button {
+        display: none !important;
+    }
+    
+    /* 3. Opcional: Darle un ancho fijo a la barra lateral para que no se encoja */
+    [data-testid="stSidebar"] {
+        min-width: 320px !important;
+        max-width: 320px !important;
+    }
+</style>
+""", unsafe_allow_html=True)
 
 # ============================================
 # FUNCIONES DE EXTRACCIÓN DE PDF (MODELO 200)
@@ -106,15 +129,6 @@ st.markdown("""
     animation: smash 0.6s infinite;
     transform-origin: bottom right;
 }
-.loading-container {
-    display: flex; 
-    align-items: center; 
-    background-color: #262730; 
-    padding: 15px 20px; 
-    border-radius: 10px; 
-    border-left: 5px solid #F57C00;
-    margin-bottom: 10px;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -123,18 +137,26 @@ if uploaded_files:
         # 1. Creamos un contenedor vacío para el gráfico
         loader_placeholder = st.empty()
         
-        # 2. Insertamos nuestro HTML personalizado con el martillo y el libro
+        # 2. Insertamos nuestro HTML personalizado con el martillo, el libro y la línea de puntos
         loader_placeholder.markdown(
             f"""
-            <div class="loading-container">
-                <div style="font-size: 35px; margin-right: 20px; width: 50px; text-align: center;">
+            <div style="display: flex; align-items: center; background-color: #262730; padding: 15px 20px; border-radius: 10px; border-left: 5px solid #F57C00; width: 100%; box-sizing: border-box;">
+                
+                <!-- Iconos animados -->
+                <div style="font-size: 40px; margin-right: 20px; width: 60px; text-align: center; flex-shrink: 0;">
                     <span class="animated-hammer">🔨</span><br>
-                    <span style="font-size: 24px; display: block; margin-top: -10px;">📘</span>
+                    <span style="font-size: 26px; display: block; margin-top: -12px;">📘</span>
                 </div>
-                <div>
-                    <span style="color: #FAFAFA; font-size: 16px; font-weight: bold;">Trabajando en los datos...</span><br>
-                    <span style="color: #A0A0A0; font-size: 14px;">Procesando: {file.name}</span>
+                
+                <!-- Texto descriptivo -->
+                <div style="flex-shrink: 0;">
+                    <span style="color: #FAFAFA; font-size: 16px; font-weight: bold;">Procesando documento...</span><br>
+                    <span style="color: #A0A0A0; font-size: 14px;">{file.name}</span>
                 </div>
+                
+                <!-- Línea de puntos larga que ocupa el resto del espacio -->
+                <div style="flex-grow: 1; margin-left: 30px; border-bottom: 4px dashed #4CAF50; height: 10px; opacity: 0.8;"></div>
+                
             </div>
             """, 
             unsafe_allow_html=True
@@ -153,7 +175,7 @@ if uploaded_files:
             st.sidebar.error(f"Error leyendo {file.name}: {e}")
             
         finally:
-            # 4. IMPORTANTE: Borramos el gráfico de carga una vez procesado el archivo
+            # 4. Borramos el gráfico de carga una vez procesado el archivo
             loader_placeholder.empty()
     
     if datos_empresa:
@@ -461,15 +483,19 @@ ratios_df['Evaluación'] = [eval_ratio(row['Ratio'], row['Valor']) for _, row in
 st.dataframe(ratios_df, hide_index=True, use_container_width=True)
 
 # ============================================
-# DATOS CRUDOS Y FOOTER
+# DATOS CRUDOS Y FOOTER (CORREGIDO)
 # ============================================
 with st.expander("📋 Ver datos extraídos (Modelo 200)"):
     if datos_empresa:
-        df_mostrar = pd.DataFrame(datos_empresa).T
+        # Filtramos el campo 'year' para que no se duplique en la tabla
+        data_sin_year = [{k: v for k, v in d.items() if k != 'year'} for d in datos_empresa]
+        df_mostrar = pd.DataFrame(data_sin_year).T
         df_mostrar.columns = years
-        df_mostrar.index = ['Año', 'Ingresos', 'Aprovisionamientos', 'Gastos Personal', 'Amortización', 'Resultado Explotación', 'Resultado Neto', 'Activo Total', 'Patrimonio Neto', 'Pasivo No Corriente', 'Pasivo Corriente', 'Clientes', 'Existencias', 'Tesorería', 'Proveedores', 'Deuda Bancaria', 'Base Imponible']
+        df_mostrar.index = ['Ingresos', 'Aprovisionamientos', 'Gastos Personal', 'Amortización', 'Resultado Explotación', 'Resultado Neto', 'Activo Total', 'Patrimonio Neto', 'Pasivo No Corriente', 'Pasivo Corriente', 'Clientes', 'Existencias', 'Tesorería', 'Proveedores', 'Deuda Bancaria', 'Base Imponible']
+        
         for col in df_mostrar.columns:
             df_mostrar[col] = df_mostrar[col].apply(lambda x: f"{x:,.2f} €" if isinstance(x, (int, float)) else x)
+            
         st.dataframe(df_mostrar, use_container_width=True)
 
 st.markdown("---")

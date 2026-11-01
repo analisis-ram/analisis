@@ -112,7 +112,7 @@ if uploaded_files:
     for file in uploaded_files:
         loader_placeholder = st.empty()
         
-        # HTML rediseñado: barra arriba centrada, libro ajustado
+        # HTML rediseñado: barra más gorda, libro ajustado debajo del martillo
         loader_html = f"""
         <!DOCTYPE html>
         <html>
@@ -121,7 +121,7 @@ if uploaded_files:
             body {{ margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100%; }}
             .card {{
                 display: flex;
-                flex-direction: column; /* Apila la barra arriba y el texto abajo */
+                flex-direction: column;
                 background-color: #262730;
                 padding: 15px 20px;
                 border-radius: 10px;
@@ -130,11 +130,11 @@ if uploaded_files:
                 box-sizing: border-box;
             }}
             .bar-bg {{
-                width: 95%; /* Ancho de la barra */
-                margin: 0 auto 15px auto; /* Centrado horizontal, margen inferior */
-                height: 12px;
+                width: 95%;
+                margin: 0 auto 12px auto;
+                height: 20px; /* Barra más gorda (antes 12px) */
                 background-color: #333333;
-                border-radius: 6px;
+                border-radius: 10px; /* Bordes más redondeados para la nueva altura */
                 overflow: hidden;
                 display: flex;
                 align-items: center;
@@ -158,9 +158,9 @@ if uploaded_files:
             .icon-container {{
                 width: 60px;
                 height: 60px;
-                position: relative; /* Contenedor relativo para posicionar el libro */
+                position: relative;
                 flex-shrink: 0;
-                margin-right: 10px;
+                margin-right: 15px;
             }}
             .hammer {{
                 display: inline-block;
@@ -169,7 +169,7 @@ if uploaded_files:
                 font-size: 38px;
                 position: absolute;
                 top: -5px;
-                left: 0px;
+                left: 10px; /* Martillo ligeramente a la derecha */
                 z-index: 2;
             }}
             @keyframes smash {{
@@ -182,13 +182,13 @@ if uploaded_files:
             .book {{
                 font-size: 24px;
                 position: absolute;
-                bottom: 0px;
-                left: 15px; /* Movido un poco a la izquierda */
+                bottom: 5px; /* Subido un poco */
+                left: -2px; /* Movido a la izquierda, debajo de la cabeza del martillo */
                 z-index: 1;
             }}
             .text {{
                 flex-shrink: 0;
-                margin-left: 10px;
+                margin-left: 5px;
             }}
             .title {{
                 color: #FAFAFA;
@@ -203,7 +203,6 @@ if uploaded_files:
         </head>
         <body>
         <div class="card">
-            <!-- La barra ahora está arriba y centrada -->
             <div class="bar-bg">
                 <div class="bar-fill"></div>
             </div>
@@ -223,8 +222,8 @@ if uploaded_files:
         """
         
         with loader_placeholder:
-            # Aumentamos un poco el height para que quepa la barra arriba
-            components.html(loader_html, height=110)
+            # Ajustamos el height para acomodar la barra más gorda
+            components.html(loader_html, height=120)
         
         try:
             extracted = extract_data_from_pdf(file)

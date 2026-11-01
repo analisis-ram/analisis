@@ -83,24 +83,78 @@ demo_data = [
 ]
 
 # ============================================
-# SIDEBAR Y CARGA DE ARCHIVOS
+# SIDEBAR Y CARGA DE ARCHIVOS CON ANIMACIÓN
 # ============================================
 st.sidebar.title("📂 Cargar Modelos 200")
 st.sidebar.markdown("Sube los PDFs del Modelo 200 (puedes seleccionar varios años a la vez).")
 uploaded_files = st.sidebar.file_uploader("Selecciona archivos PDF", type="pdf", accept_multiple_files=True)
 
 datos_empresa = []
+
+# CSS para la animación del martillo
+st.markdown("""
+<style>
+@keyframes smash {
+    0% { transform: rotate(0deg); }
+    30% { transform: rotate(-40deg); }
+    50% { transform: rotate(15deg); }
+    70% { transform: rotate(-10deg); }
+    100% { transform: rotate(0deg); }
+}
+.animated-hammer {
+    display: inline-block;
+    animation: smash 0.6s infinite;
+    transform-origin: bottom right;
+}
+.loading-container {
+    display: flex; 
+    align-items: center; 
+    background-color: #262730; 
+    padding: 15px 20px; 
+    border-radius: 10px; 
+    border-left: 5px solid #F57C00;
+    margin-bottom: 10px;
+}
+</style>
+""", unsafe_allow_html=True)
+
 if uploaded_files:
     for file in uploaded_files:
-        with st.spinner(f"Procesando {file.name}..."):
-            try:
-                extracted = extract_data_from_pdf(file)
-                if extracted['ingresos'] > 0 or extracted['activo_total'] > 0:
-                    datos_empresa.append(extracted)
-                else:
-                    st.sidebar.warning(f"No se pudieron extraer datos válidos de {file.name}")
-            except Exception as e:
-                st.sidebar.error(f"Error leyendo {file.name}: {e}")
+        # 1. Creamos un contenedor vacío para el gráfico
+        loader_placeholder = st.empty()
+        
+        # 2. Insertamos nuestro HTML personalizado con el martillo y el libro
+        loader_placeholder.markdown(
+            f"""
+            <div class="loading-container">
+                <div style="font-size: 35px; margin-right: 20px; width: 50px; text-align: center;">
+                    <span class="animated-hammer">🔨</span><br>
+                    <span style="font-size: 24px; display: block; margin-top: -10px;">📘</span>
+                </div>
+                <div>
+                    <span style="color: #FAFAFA; font-size: 16px; font-weight: bold;">Trabajando en los datos...</span><br>
+                    <span style="color: #A0A0A0; font-size: 14px;">Procesando: {file.name}</span>
+                </div>
+            </div>
+            """, 
+            unsafe_allow_html=True
+        )
+        
+        try:
+            # 3. Procesamos el PDF
+            extracted = extract_data_from_pdf(file)
+            
+            if extracted['ingresos'] > 0 or extracted['activo_total'] > 0:
+                datos_empresa.append(extracted)
+            else:
+                st.sidebar.warning(f"No se pudieron extraer datos válidos de {file.name}")
+                
+        except Exception as e:
+            st.sidebar.error(f"Error leyendo {file.name}: {e}")
+            
+        finally:
+            # 4. IMPORTANTE: Borramos el gráfico de carga una vez procesado el archivo
+            loader_placeholder.empty()
     
     if datos_empresa:
         datos_empresa = sorted(datos_empresa, key=lambda x: x['year'])
@@ -267,31 +321,21 @@ with col5:
 st.markdown("---")
 st.subheader("🚨 SIRENAS ROJAS Y ALERTAS CRÍTICAS")
 
-# Definimos el CSS para las alertas personalizadas (Rojo brillante, letra blanca)
+# CSS para las alertas personalizadas
 st.markdown("""
 <style>
     .custom-alert-red {
-        background-color: #E53935; /* Rojo brillante */
-        color: #FFFFFF !important; /* Letra blanca pura */
-        padding: 15px;
-        border-radius: 8px;
-        margin-bottom: 10px;
-        font-weight: 500;
-        font-size: 15px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        background-color: #E53935; color: #FFFFFF !important;
+        padding: 15px; border-radius: 8px; margin-bottom: 10px;
+        font-weight: 500; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .custom-alert-red b {
-        color: #FFFFFF !important; /* Asegura que las negritas sean blancas */
-        font-weight: 700;
-    }
+    .custom-alert-red b { color: #FFFFFF !important; font-weight: 700; }
     .custom-alert-orange {
-        background-color: #F57C00; /* Naranja fuerte */
-        color: #FFFFFF !important;
+        background-color: #F57C00; color: #FFFFFF !important;
         padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
     .custom-alert-green {
-        background-color: #2E7D32; /* Verde oscuro elegante */
-        color: #FFFFFF !important;
+        background-color: #2E7D32; color: #FFFFFF !important;
         padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 </style>
@@ -336,18 +380,11 @@ if ratios[idx]['roe'] > 10:
 if ratios[idx]['margen_bruto'] > 50:
     fortalezas.append(f"✅ **Margen Bruto {ratios[idx]['margen_bruto']:.1f}%** — Excelente capacidad de generar valor añadido.")
 
-# Función para convertir markdown (asteriscos) a HTML (negritas)
-def format_text(text):
-    return text.replace("**", "<b>").replace("**", "</b>") 
-    # Nota: El replace doble es un pequeño truco rápido, 
-    # idealmente se usaría regex para evitar fallos, pero para este caso funciona.
-
 # Renderizar alertas con HTML personalizado
 if not alertas and not advertencias:
     st.success("✅ No se han detectado alertas críticas con los datos disponibles.")
 
 for a in alertas:
-    # Limpiamos los asteriscos del markdown y lo convertimos a etiquetas <b> de HTML
     a_html = a.replace("**", "<b>", 1).replace("**", "</b>", 1) 
     st.markdown(f'<div class="custom-alert-red">{a_html}</div>', unsafe_allow_html=True)
 

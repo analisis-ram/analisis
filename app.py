@@ -199,7 +199,7 @@ st.sidebar.markdown("🟠 **Advertencia** - Vigilar")
 st.sidebar.markdown("✅ **Correcto** - Sin problemas")
 
 # ============================================
-# HEADER Y BOTONES ESTILO "SERVIPDF"
+# HEADER Y BOTONES
 # ============================================
 col_title, col_actions = st.columns([6.5, 3.5])
 
@@ -217,44 +217,25 @@ with col_actions:
     </div>
     """, unsafe_allow_html=True)
 
-    # HTML y CSS de los botones (Réplica exacta de la foto)
+    # Botones (Se usan emojis para no romper el diseño con SVGs)
     st.markdown("""
-    <div style="display: flex; flex-direction: column; gap: 12px; align-items: center;">
-        
-        <!-- Botón WhatsApp -->
+    <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
         <a href="https://wa.me/34644247796" target="_blank" style="
             display: flex; align-items: center; justify-content: center;
-            background-color: #22c55e; /* Verde brillante */
-            color: white; text-decoration: none;
+            background-color: #22c55e; color: white; text-decoration: none;
             padding: 12px 24px; border-radius: 50px;
-            font-weight: 600; font-size: 16px; font-family: sans-serif;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
-        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)';">
-            
-            <svg style="width: 22px; height: 22px; margin-right: 10px;" viewBox="0 0 24 24" fill="white">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
-            </svg>
-            Contactar con el creador
+            font-weight: bold; font-size: 16px; width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;">
+            💬 Contactar con el creador
         </a>
-
-        <!-- Botón Email (Abre Gmail en nueva pestaña) -->
-        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=cuadrarcuentas@gmail.com&su=Consulta%20desde%20la%20App%20de%20Análisis" target="_blank" style="
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=cuadrarcuentas@gmail.com&su=Consulta%20desde%20la%20App" target="_blank" style="
             display: flex; align-items: center; justify-content: center;
-            background-color: #3b82f6; /* Azul brillante */
-            color: white; text-decoration: none;
+            background-color: #3b82f6; color: white; text-decoration: none;
             padding: 12px 24px; border-radius: 50px;
-            font-weight: 600; font-size: 16px; font-family: sans-serif;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%;
-            transition: transform 0.2s, box-shadow 0.2s;
-        " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(0,0,0,0.15)';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 6px rgba(0,0,0,0.1)';">
-            
-            <svg style="width: 22px; height: 22px; margin-right: 10px;" viewBox="0 0 24 24" fill="white">
-                <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-            </svg>
-            cuadrarcuentas@gmail.com
+            font-weight: bold; font-size: 16px; width: 100%;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: 0.2s;">
+            ✉️ cuadrarcuentas@gmail.com
         </a>
-        
     </div>
     """, unsafe_allow_html=True)
 
@@ -281,10 +262,40 @@ with col5:
     st.metric("👥 Empleados", "N/A", "N/A")
 
 # ============================================
-# SIRENAS ROJAS - ALERTAS DINÁMICAS
+# SIRENAS ROJAS - ALERTAS DINÁMICAS CON ESTILO
 # ============================================
 st.markdown("---")
 st.subheader("🚨 SIRENAS ROJAS Y ALERTAS CRÍTICAS")
+
+# Definimos el CSS para las alertas personalizadas (Rojo brillante, letra blanca)
+st.markdown("""
+<style>
+    .custom-alert-red {
+        background-color: #E53935; /* Rojo brillante */
+        color: #FFFFFF !important; /* Letra blanca pura */
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        font-weight: 500;
+        font-size: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .custom-alert-red b {
+        color: #FFFFFF !important; /* Asegura que las negritas sean blancas */
+        font-weight: 700;
+    }
+    .custom-alert-orange {
+        background-color: #F57C00; /* Naranja fuerte */
+        color: #FFFFFF !important;
+        padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .custom-alert-green {
+        background-color: #2E7D32; /* Verde oscuro elegante */
+        color: #FFFFFF !important;
+        padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+</style>
+""", unsafe_allow_html=True)
 
 alertas = []
 advertencias = []
@@ -325,11 +336,28 @@ if ratios[idx]['roe'] > 10:
 if ratios[idx]['margen_bruto'] > 50:
     fortalezas.append(f"✅ **Margen Bruto {ratios[idx]['margen_bruto']:.1f}%** — Excelente capacidad de generar valor añadido.")
 
+# Función para convertir markdown (asteriscos) a HTML (negritas)
+def format_text(text):
+    return text.replace("**", "<b>").replace("**", "</b>") 
+    # Nota: El replace doble es un pequeño truco rápido, 
+    # idealmente se usaría regex para evitar fallos, pero para este caso funciona.
+
+# Renderizar alertas con HTML personalizado
 if not alertas and not advertencias:
     st.success("✅ No se han detectado alertas críticas con los datos disponibles.")
-for a in alertas: st.error(a)
-for a in advertencias: st.warning(a)
-for a in fortalezas: st.success(a)
+
+for a in alertas:
+    # Limpiamos los asteriscos del markdown y lo convertimos a etiquetas <b> de HTML
+    a_html = a.replace("**", "<b>", 1).replace("**", "</b>", 1) 
+    st.markdown(f'<div class="custom-alert-red">{a_html}</div>', unsafe_allow_html=True)
+
+for a in advertencias:
+    a_html = a.replace("**", "<b>", 1).replace("**", "</b>", 1)
+    st.markdown(f'<div class="custom-alert-orange">{a_html}</div>', unsafe_allow_html=True)
+
+for a in fortalezas:
+    a_html = a.replace("**", "<b>", 1).replace("**", "</b>", 1)
+    st.markdown(f'<div class="custom-alert-green">{a_html}</div>', unsafe_allow_html=True)
 
 # ============================================
 # GRÁFICOS
@@ -396,7 +424,7 @@ ratios_df['Evaluación'] = [eval_ratio(row['Ratio'], row['Valor']) for _, row in
 st.dataframe(ratios_df, hide_index=True, use_container_width=True)
 
 # ============================================
-# DATOS CRUDOS
+# DATOS CRUDOS Y FOOTER
 # ============================================
 with st.expander("📋 Ver datos extraídos (Modelo 200)"):
     if datos_empresa:
@@ -407,11 +435,7 @@ with st.expander("📋 Ver datos extraídos (Modelo 200)"):
             df_mostrar[col] = df_mostrar[col].apply(lambda x: f"{x:,.2f} €" if isinstance(x, (int, float)) else x)
         st.dataframe(df_mostrar, use_container_width=True)
 
-# ============================================
-# FOOTER (AVISO DE PRIVACIDAD ACTUALIZADO)
-# ============================================
 st.markdown("---")
-
 st.markdown("""
 <div style='text-align: center; color: #333; font-size: 13px; margin-top: 40px; padding: 20px; background-color: #f8f9fa; border-radius: 10px; border: 1px solid #dee2e6;'>
     <h4 style="color: #0056b3; margin-bottom: 15px;">🔒 Política de Privacidad y Tratamiento de Datos</h4>

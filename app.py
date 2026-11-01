@@ -16,7 +16,7 @@ st.set_page_config(
 )
 
 # ============================================
-# CSS PARA FIJAR LA BARRA LATERAL Y ANIMACIÓN
+# CSS PARA FIJAR LA BARRA LATERAL, ANIMACIÓN Y BARRA DE PROGRESO
 # ============================================
 st.markdown("""
 <style>
@@ -42,6 +42,38 @@ st.markdown("""
         display: inline-block;
         animation: smash 0.6s infinite;
         transform-origin: bottom right;
+    }
+
+    /* NUEVO: Contenedor de la barra de progreso */
+    .progress-container {
+        flex-grow: 1; 
+        margin-left: 30px; 
+        height: 12px; 
+        background-color: #333333; /* Fondo oscuro (los puntos apagados) */
+        border-radius: 6px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* NUEVO: Relleno animado (los puntos encendiéndose) */
+    .progress-bar-animated {
+        height: 100%;
+        width: 100%;
+        background: repeating-linear-gradient(
+            -45deg,
+            #4CAF50,
+            #4CAF50 10px,
+            #2E7D32 10px,
+            #2E7D32 20px
+        );
+        background-size: 28.28px 28.28px; /* Matemáticas para que el ángulo de 45º encaje perfecto */
+        animation: stripe-move 1s linear infinite; /* Animación infinita */
+    }
+
+    /* Animación que mueve las rayas hacia la derecha */
+    @keyframes stripe-move {
+        0% { background-position: 0 0; }
+        100% { background-position: 28.28px 0; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -127,7 +159,7 @@ if uploaded_files:
         # 1. Contenedor vacío para el gráfico
         loader_placeholder = st.empty()
         
-        # 2. HTML limpiado con textwrap.dedent para evitar que Streamlit lo lea como código
+        # 2. HTML limpiado con textwrap.dedent
         html_loader = textwrap.dedent(f"""
             <div style="display: flex; align-items: center; background-color: #262730; padding: 15px 20px; border-radius: 10px; border-left: 5px solid #F57C00; width: 100%; box-sizing: border-box;">
                 <div style="font-size: 40px; margin-right: 20px; width: 60px; text-align: center; flex-shrink: 0;">
@@ -138,7 +170,12 @@ if uploaded_files:
                     <span style="color: #FAFAFA; font-size: 16px; font-weight: bold;">Procesando documento...</span><br>
                     <span style="color: #A0A0A0; font-size: 14px;">{file.name}</span>
                 </div>
-                <div style="flex-grow: 1; margin-left: 30px; border-bottom: 4px dashed #4CAF50; height: 10px; opacity: 0.8;"></div>
+                
+                <!-- AQUÍ ESTÁ LA NUEVA BARRA ANIMADA -->
+                <div class="progress-container">
+                    <div class="progress-bar-animated"></div>
+                </div>
+
             </div>
         """)
         

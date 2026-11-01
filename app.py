@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.graph_objects as go
 import pdfplumber
 import re
-import io
+import textwrap
 
 # ============================================
 # CONFIGURACIÓN DE PÁGINA (FIJO A LA IZQUIERDA)
@@ -12,28 +12,36 @@ st.set_page_config(
     page_title="Análisis Financiero Modelo 200",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="expanded" # Se abre expandido por defecto
+    initial_sidebar_state="expanded"
 )
 
 # ============================================
-# CSS PARA FIJAR LA BARRA LATERAL (NO SE PUEDE OCULTAR)
+# CSS PARA FIJAR LA BARRA LATERAL Y ANIMACIÓN
 # ============================================
 st.markdown("""
 <style>
-    /* 1. Ocultar la flecha para cerrar la barra lateral (la que sale fuera) */
-    [data-testid="collapsedControl"] {
-        display: none !important;
-    }
+    /* Ocultar la flecha para cerrar la barra lateral */
+    [data-testid="collapsedControl"] { display: none !important; }
+    [data-testid="stSidebarHeader"] button { display: none !important; }
     
-    /* 2. Ocultar el botón interno de la barra lateral para cerrarla */
-    [data-testid="stSidebarHeader"] button {
-        display: none !important;
-    }
-    
-    /* 3. Opcional: Darle un ancho fijo a la barra lateral para que no se encoja */
+    /* Darle un ancho fijo a la barra lateral */
     [data-testid="stSidebar"] {
         min-width: 320px !important;
         max-width: 320px !important;
+    }
+
+    /* Animación del martillo */
+    @keyframes smash {
+        0% { transform: rotate(0deg); }
+        30% { transform: rotate(-40deg); }
+        50% { transform: rotate(15deg); }
+        70% { transform: rotate(-10deg); }
+        100% { transform: rotate(0deg); }
+    }
+    .animated-hammer {
+        display: inline-block;
+        animation: smash 0.6s infinite;
+        transform-origin: bottom right;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -106,7 +114,7 @@ demo_data = [
 ]
 
 # ============================================
-# SIDEBAR Y CARGA DE ARCHIVOS CON ANIMACIÓN
+# SIDEBAR Y CARGA DE ARCHIVOS CON ANIMACIÓN CORREGIDA
 # ============================================
 st.sidebar.title("📂 Cargar Modelos 200")
 st.sidebar.markdown("Sube los PDFs del Modelo 200 (puedes seleccionar varios años a la vez).")
@@ -114,53 +122,27 @@ uploaded_files = st.sidebar.file_uploader("Selecciona archivos PDF", type="pdf",
 
 datos_empresa = []
 
-# CSS para la animación del martillo
-st.markdown("""
-<style>
-@keyframes smash {
-    0% { transform: rotate(0deg); }
-    30% { transform: rotate(-40deg); }
-    50% { transform: rotate(15deg); }
-    70% { transform: rotate(-10deg); }
-    100% { transform: rotate(0deg); }
-}
-.animated-hammer {
-    display: inline-block;
-    animation: smash 0.6s infinite;
-    transform-origin: bottom right;
-}
-</style>
-""", unsafe_allow_html=True)
-
 if uploaded_files:
     for file in uploaded_files:
-        # 1. Creamos un contenedor vacío para el gráfico
+        # 1. Contenedor vacío para el gráfico
         loader_placeholder = st.empty()
         
-        # 2. Insertamos nuestro HTML personalizado con el martillo, el libro y la línea de puntos
-        loader_placeholder.markdown(
-            f"""
+        # 2. HTML limpiado con textwrap.dedent para evitar que Streamlit lo lea como código
+        html_loader = textwrap.dedent(f"""
             <div style="display: flex; align-items: center; background-color: #262730; padding: 15px 20px; border-radius: 10px; border-left: 5px solid #F57C00; width: 100%; box-sizing: border-box;">
-                
-                <!-- Iconos animados -->
                 <div style="font-size: 40px; margin-right: 20px; width: 60px; text-align: center; flex-shrink: 0;">
                     <span class="animated-hammer">🔨</span><br>
                     <span style="font-size: 26px; display: block; margin-top: -12px;">📘</span>
                 </div>
-                
-                <!-- Texto descriptivo -->
                 <div style="flex-shrink: 0;">
                     <span style="color: #FAFAFA; font-size: 16px; font-weight: bold;">Procesando documento...</span><br>
                     <span style="color: #A0A0A0; font-size: 14px;">{file.name}</span>
                 </div>
-                
-                <!-- Línea de puntos larga que ocupa el resto del espacio -->
                 <div style="flex-grow: 1; margin-left: 30px; border-bottom: 4px dashed #4CAF50; height: 10px; opacity: 0.8;"></div>
-                
             </div>
-            """, 
-            unsafe_allow_html=True
-        )
+        """)
+        
+        loader_placeholder.markdown(html_loader, unsafe_allow_html=True)
         
         try:
             # 3. Procesamos el PDF
@@ -169,19 +151,21 @@ if uploaded_files:
             if extracted['ingresos'] > 0 or extracted['activo_total'] > 0:
                 datos_empresa.append(extracted)
             else:
-                st.sidebar.warning(f"No se pudieron extraer datos válidos de {file.name}")
+                st.sidebar.warning(f"Aviso: El archivo {file.name} parece estar vacío o no tiene el formato correcto.")
                 
         except Exception as e:
             st.sidebar.error(f"Error leyendo {file.name}: {e}")
             
         finally:
-            # 4. Borramos el gráfico de carga una vez procesado el archivo
+            # 4. Borramos el gráfico de carga
             loader_placeholder.empty()
     
+    # Si se han cargado datos, los ordenamos
     if datos_empresa:
         datos_empresa = sorted(datos_empresa, key=lambda x: x['year'])
         st.sidebar.success(f"¡{len(datos_empresa)} ejercicios cargados!")
     else:
+        st.sidebar.warning("No se pudo extraer información de los PDFs. Mostrando Modo Demo.")
         datos_empresa = demo_data
 else:
     st.sidebar.info("Modo Demo activado. Sube PDFs para analizar otras empresas.")
@@ -483,7 +467,7 @@ ratios_df['Evaluación'] = [eval_ratio(row['Ratio'], row['Valor']) for _, row in
 st.dataframe(ratios_df, hide_index=True, use_container_width=True)
 
 # ============================================
-# DATOS CRUDOS Y FOOTER (CORREGIDO)
+# DATOS CRUDOS Y FOOTER
 # ============================================
 with st.expander("📋 Ver datos extraídos (Modelo 200)"):
     if datos_empresa:

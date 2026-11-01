@@ -112,35 +112,110 @@ if uploaded_files:
     for file in uploaded_files:
         loader_placeholder = st.empty()
         
-        # Usamos components.html para que Streamlit no se confunda y no muestre el código
+        # HTML rediseñado: barra arriba centrada, libro ajustado
         loader_html = f"""
         <!DOCTYPE html>
         <html>
         <head>
         <style>
-            body {{ margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; }}
-            .card {{ display: flex; align-items: center; background-color: #262730; padding: 15px 20px; border-radius: 10px; border-left: 5px solid #F57C00; width: 100%; box-sizing: border-box; }}
-            .hammer {{ display: inline-block; animation: smash 0.6s infinite; transform-origin: bottom right; font-size: 40px; }}
-            @keyframes smash {{ 0% {{ transform: rotate(0deg); }} 30% {{ transform: rotate(-40deg); }} 50% {{ transform: rotate(15deg); }} 70% {{ transform: rotate(-10deg); }} 100% {{ transform: rotate(0deg); }} }}
-            .text {{ flex-shrink: 0; margin-left: 15px; }}
-            .title {{ color: #FAFAFA; font-size: 16px; font-weight: bold; }}
-            .subtitle {{ color: #A0A0A0; font-size: 14px; }}
-            .bar-bg {{ flex-grow: 1; margin-left: 30px; height: 12px; background-color: #333333; border-radius: 6px; overflow: hidden; display: flex; align-items: center; }}
-            .bar-fill {{ height: 100%; width: 100%; background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 10px, #2E7D32 10px, #2E7D32 20px); background-size: 28.28px 28.28px; animation: move 1s linear infinite; }}
-            @keyframes move {{ 0% {{ background-position: 0 0; }} 100% {{ background-position: 28.28px 0; }} }}
+            body {{ margin: 0; padding: 0; font-family: sans-serif; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100%; }}
+            .card {{
+                display: flex;
+                flex-direction: column; /* Apila la barra arriba y el texto abajo */
+                background-color: #262730;
+                padding: 15px 20px;
+                border-radius: 10px;
+                border-left: 5px solid #F57C00;
+                width: 100%;
+                box-sizing: border-box;
+            }}
+            .bar-bg {{
+                width: 95%; /* Ancho de la barra */
+                margin: 0 auto 15px auto; /* Centrado horizontal, margen inferior */
+                height: 12px;
+                background-color: #333333;
+                border-radius: 6px;
+                overflow: hidden;
+                display: flex;
+                align-items: center;
+            }}
+            .bar-fill {{
+                height: 100%;
+                width: 100%;
+                background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 10px, #2E7D32 10px, #2E7D32 20px);
+                background-size: 28.28px 28.28px;
+                animation: move 1s linear infinite;
+            }}
+            @keyframes move {{
+                0% {{ background-position: 0 0; }}
+                100% {{ background-position: 28.28px 0; }}
+            }}
+            .content-wrapper {{
+                display: flex;
+                align-items: center;
+                width: 100%;
+            }}
+            .icon-container {{
+                width: 60px;
+                height: 60px;
+                position: relative; /* Contenedor relativo para posicionar el libro */
+                flex-shrink: 0;
+                margin-right: 10px;
+            }}
+            .hammer {{
+                display: inline-block;
+                animation: smash 0.6s infinite;
+                transform-origin: bottom right;
+                font-size: 38px;
+                position: absolute;
+                top: -5px;
+                left: 0px;
+                z-index: 2;
+            }}
+            @keyframes smash {{
+                0% {{ transform: rotate(0deg); }}
+                30% {{ transform: rotate(-40deg); }}
+                50% {{ transform: rotate(15deg); }}
+                70% {{ transform: rotate(-10deg); }}
+                100% {{ transform: rotate(0deg); }}
+            }}
+            .book {{
+                font-size: 24px;
+                position: absolute;
+                bottom: 0px;
+                left: 15px; /* Movido un poco a la izquierda */
+                z-index: 1;
+            }}
+            .text {{
+                flex-shrink: 0;
+                margin-left: 10px;
+            }}
+            .title {{
+                color: #FAFAFA;
+                font-size: 16px;
+                font-weight: bold;
+            }}
+            .subtitle {{
+                color: #A0A0A0;
+                font-size: 14px;
+            }}
         </style>
         </head>
         <body>
         <div class="card">
-            <div style="width: 50px; text-align: center;">
-                <span class="hammer">🔨</span><br><span style="font-size: 24px; display: block; margin-top: -10px;">📘</span>
-            </div>
-            <div class="text">
-                <div class="title">Procesando documento...</div>
-                <div class="subtitle">{file.name}</div>
-            </div>
+            <!-- La barra ahora está arriba y centrada -->
             <div class="bar-bg">
                 <div class="bar-fill"></div>
+            </div>
+            <div class="content-wrapper">
+                <div class="icon-container">
+                    <span class="hammer">🔨</span>
+                    <span class="book">📘</span>
+                </div>
+                <div class="text">
+                    <div class="title">Procesando documento...</div>
+                    <div class="subtitle">{file.name}</div>
+                </div>
             </div>
         </div>
         </body>
@@ -148,7 +223,8 @@ if uploaded_files:
         """
         
         with loader_placeholder:
-            components.html(loader_html, height=85)
+            # Aumentamos un poco el height para que quepa la barra arriba
+            components.html(loader_html, height=110)
         
         try:
             extracted = extract_data_from_pdf(file)

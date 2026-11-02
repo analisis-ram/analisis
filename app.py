@@ -3,8 +3,8 @@ import pandas as pd
 import plotly.graph_objects as go
 import pdfplumber
 import re
-import textwrap
 import openai
+import streamlit.components.v1 as components
 
 # ============================================
 # CONFIGURACIÓN DE PÁGINA (SKIN PROFESIONAL)
@@ -16,24 +16,33 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# ============================================
+# CSS MEJORADO (ADAPTABLE A MODO OSCURO/CLARO)
+# ============================================
 st.markdown("""
 <style>
-    /* Estilos generales para un look profesional */
+    /* Estilos generales */
     .block-container { padding-top: 2rem; }
-    h1, h2, h3 { font-family: 'Helvetica Neue', sans-serif; color: #1E3A8A; }
-    .stMetric { background-color: #F3F4F6; padding: 10px; border-radius: 8px; }
     
     /* Ocultar la flecha para cerrar la barra lateral */
     [data-testid="collapsedControl"] { display: none !important; }
     [data-testid="stSidebarHeader"] button { display: none !important; }
     
-    /* Alertas personalizadas */
-    .alert-critical { background-color: #DC2626; color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; }
-    .alert-warning { background-color: #F59E0B; color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; }
-    .alert-success { background-color: #10B981; color: white; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: bold; }
+    /* Cajas de alertas (Legibles en cualquier tema) */
+    .alert-critical { background-color: #EF4444; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
+    .alert-warning { background-color: #F59E0B; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
+    .alert-success { background-color: #10B981; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
     
     /* Estilo del informe IA */
-    .ai-report { background-color: #F8FAFC; border-left: 5px solid #1E3A8A; padding: 20px; border-radius: 5px; font-size: 15px; line-height: 1.6; }
+    .ai-report { background-color: transparent; border-left: 5px solid #3B82F6; padding: 15px 20px; border-radius: 4px; font-size: 15px; line-height: 1.6; }
+    
+    /* Ajuste de los KPIs para que no se rompan en modo oscuro */
+    div[data-testid="stMetric"] { 
+        background-color: transparent !important; 
+        border: 1px solid rgba(128, 128, 128, 0.3); 
+        padding: 15px; 
+        border-radius: 10px; 
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -59,7 +68,7 @@ def extract_data_from_pdf(pdf_file):
         'activo_total': 0.0, 'patrimonio_neto': 0.0, 'pasivo_no_corriente': 0.0,
         'pasivo_corriente': 0.0, 'clientes': 0.0, 'tesoreria': 0.0,
         'proveedores': 0.0, 'deuda_bancaria': 0.0, 'base_imponible': 0.0,
-        # Nuevas celdas solicitadas
+        # Celdas específicas solicitadas
         'existencias_00138': 0.0,
         'acreedores_00239': 0.0,
         'accionistas_b2': []
@@ -98,15 +107,14 @@ def extract_data_from_pdf(pdf_file):
     # Celdas específicas solicitadas
     data['existencias_00138'] = get_val('00138')
     data['acreedores_00239'] = get_val('00239')
-    data['proveedores'] = get_val('00240') # Mantenemos este como principal de proveedores
+    data['proveedores'] = get_val('00240')
     
-    # Extraer Accionistas (B.2. Participaciones de personas o entidades en la declarante)
-    # Buscamos el bloque B.2 y extraemos los NIFs
+    # Extraer Accionistas (B.2)
     b2_match = re.search(r'B\.2\.\s+Participaciones de personas.*?(?=C\.|D\.|$)', text, re.DOTALL | re.IGNORECASE)
     if b2_match:
         b2_text = b2_match.group(0)
         nifs = re.findall(r'\b[A-Z0-9]\d{7}[A-Z0-9]\b', b2_text)
-        data['accionistas_b2'] = list(set(nifs)) # Eliminar duplicados
+        data['accionistas_b2'] = sorted(list(set(nifs))) # Ordenados y sin duplicados
 
     return data
 
@@ -117,26 +125,22 @@ def generate_ai_report(api_key, financial_summary, rules_audit):
     client = openai.OpenAI(api_key=api_key)
     
     system_prompt = """
-    Eres un Analista Financiero Senior con más de 22 años de experiencia auditando empresas en España. 
-    Tu tono es formal, directo, técnico y orientado a la toma de decisiones de inversión o crédito.
-    Recibirás un resumen de datos extraídos de los Modelos 200 de una empresa y una auditoría de reglas de negocio.
-    Tu tarea es redactar un Informe Ejecutivo de Análisis de Riesgo.
-    
-    REGLAS DE ORO A APLICAR (Tus 22 años de experiencia):
-    1. Si el Pasivo Corriente es negativo, es un error contable gravísimo. La liquidez es ficticia.
-    2. Si Proveedores (00240-00249) está a 0 pero hay Aprovisionamientos, es una alarma roja de descuadre o pago al contado.
-    3. Si el Periodo Medio de Cobro (PMC) es superior a 90 días, la empresa está financiando a sus clientes y sufre tensión de caja.
-    4. Si los accionistas (B.2) no son los mismos en los 3 años, debes advertir de cambios en el control societario.
-    5. Las variaciones bruscas en Existencias (00138) sin cambios en ventas indican obsolescencia o mala gestión de stock.
-    
-    Redacta un texto estructurado con: Resumen Ejecutivo, Sirenas Rojas detectadas, y Recomendaciones.
+    Eres un Analista Financiero Senior con 22 años de experiencia. Tono formal, técnico y directo.
+    Tu objetivo es redactar un Informe Ejecutivo de Riesgo basado en los datos del Modelo 200.
+    Aplica estas reglas de oro:
+    1. Pasivo Corriente negativo = Error contable gravísimo.
+    2. Proveedores (00240-00249) a 0 con Aprovisionamientos > 0 = Alarma roja.
+    3. PMC > 90 días = Tensión de caja por financiar a clientes.
+    4. Cambio de accionistas (B.2) = Advertir cambio de control.
+    5. Variaciones en Existencias (00138) sin cambio en ventas = Obsolescencia.
+    Redacta un texto estructurado con: Resumen Ejecutivo, Sirenas Rojas y Recomendaciones.
     """
     
-    user_prompt = f"Datos Financieros y Auditoría:\n{financial_summary}\n\nResultados de las Reglas:\n{rules_audit}"
+    user_prompt = f"Datos Financieros:\n{financial_summary}\n\nAuditoría de Reglas:\n{rules_audit}"
     
     try:
         response = client.chat.completions.create(
-            model="gpt-4o-mini", # Modelo rápido y económico
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
@@ -150,14 +154,13 @@ def generate_ai_report(api_key, financial_summary, rules_audit):
 # ============================================
 # INTERFAZ SIDEBAR
 # ============================================
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3135/3135679.png", width=80) # Icono de analista
-st.sidebar.title("Auditoría Senior")
-st.sidebar.markdown("Sube los Modelos 200 (mínimo 3 años) para el análisis comparativo.")
+st.sidebar.title("💼 Auditoría Senior")
+st.sidebar.markdown("Sube los Modelos 200 (mínimo 2 años) para el análisis comparativo.")
 uploaded_files = st.sidebar.file_uploader("Selecciona PDFs", type="pdf", accept_multiple_files=True)
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("🤖 IA Privada (OpenAI)")
-st.sidebar.markdown("Introduce tu API Key para generar el informe ejecutivo. *No se almacena en ningún servidor.*")
+st.sidebar.markdown("Introduce tu API Key para generar el informe. *No se almacena.*")
 api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 
 datos_empresa = []
@@ -177,133 +180,140 @@ else:
     st.sidebar.info("Esperando archivos PDF...")
 
 # ============================================
-# LÓGICA DE AUDITORÍA (LOS TIPS DEL ANALISTA)
+# RENDERIZADO PRINCIPAL
 # ============================================
 if datos_empresa and len(datos_empresa) >= 2:
     years = [d['year'] for d in datos_empresa]
     
     # 1. Auditoría B.2 (Accionistas)
-    accionistas_2023 = datos_empresa[0]['accionistas_b2']
-    accionistas_2024 = datos_empresa[1]['accionistas_b2']
-    accionistas_2025 = datos_empresa[2]['accionistas_b2'] if len(datos_empresa) > 2 else accionistas_2024
+    accionistas_1 = datos_empresa[0]['accionistas_b2']
+    accionistas_2 = datos_empresa[1]['accionistas_b2']
+    accionistas_3 = datos_empresa[2]['accionistas_b2'] if len(datos_empresa) > 2 else accionistas_2
     
-    b2_status = "✅ Los accionistas (B.2) se mantienen constantes en el periodo." if (accionistas_2023 == accionistas_2024 == accionistas_2025) else "🔴 ALERTA: Han cambiado los accionistas (B.2). Revisar estructura societaria."
+    # Comprobar si los accionistas han cambiado
+    b2_status_ok = (accionistas_1 == accionistas_2 == accionistas_3)
+    b2_msg = "✅ Los accionistas (B.2) se mantienen constantes." if b2_status_ok else "🔴 ALERTA: Han cambiado los accionistas (B.2). Revisar estructura societaria."
     
-    # 2. Auditoría Celdas (00138, 00239-00249)
+    # 2. Auditoría Celdas Específicas
     ev_existencias = []
     ev_acreedores = []
     sirena_acreedores = False
     
     for d in datos_empresa:
-        ev_existencias.append(f"{d['year']}: {d['existencias_00138']:,.2f} €")
-        ev_acreedores.append(f"{d['year']}: Acreedores 00239: {d['acreedores_00239']:,.2f} € | Proveedores 00240: {d['proveedores']:,.2f} €")
+        ev_existencias.append(f"<b>{d['year']}:</b> {d['existencias_00138']:,.2f} €")
+        ev_acreedores.append(f"<b>{d['year']}:</b> Celda 00239: {d['acreedores_00239']:,.2f} € | Celda 00240: {d['proveedores']:,.2f} €")
         
         # Sirena roja: Proveedores a cero pero hay compras
         if d['proveedores'] == 0 and d['aprovisionamientos'] > 5000:
             sirena_acreedores = True
 
-    # ============================================
-    # RENDERIZADO PRINCIPAL
-    # ============================================
     st.title("💼 Informe de Auditoría Financiera y Riesgo")
-    st.markdown(f"**Empresa analizada:** Datos extraídos del Modelo 200 | **Periodo:** {years[0]} - {years[-1]}")
+    st.markdown(f"**Periodo analizado:** {years[0]} - {years[-1]} | Datos extraídos del Modelo 200")
     st.markdown("---")
 
-    # --- SECCIÓN DE AUDITORÍA ESTRUCTURAL ---
+    # --- SECCIÓN 1: AUDITORÍA ESTRUCTURAL ---
     st.subheader("🔍 1. Auditoría de Estructura y Desglose")
     
     col_audit1, col_audit2 = st.columns(2)
     
     with col_audit1:
         st.markdown("### B.2. Participaciones (Accionistas)")
-        st.markdown(b2_status)
+        if b2_status_ok:
+            st.markdown('<div class="alert-success">✅ Los accionistas (B.2) son los mismos en todos los ejercicios.</div>', unsafe_allow_html=True)
+        else:
+            st.markdown('<div class="alert-critical">🔴 SIRENA ROJA: Cambio de accionistas (B.2) detectado.</div>', unsafe_allow_html=True)
+        
         with st.expander("Ver NIFs extraídos de B.2"):
-            st.write(f"{years[0]}: {accionistas_2023}")
-            st.write(f"{years[1]}: {accionistas_2024}")
-            if len(years) > 2: st.write(f"{years[2]}: {accionistas_2025}")
+            for d in datos_empresa:
+                st.write(f"**{d['year']}:** {d['accionistas_b2']}")
             
     with col_audit2:
         st.markdown("### Desglose de Existencias y Acreedores")
         if sirena_acreedores:
-            st.markdown('<div class="alert-critical">🔴 SIRENA ROJA: El saldo de Proveedores (00240-00249) es CERO o vacío, pero existen Aprovisionamientos. Esto es un error de conciliación contable inaceptable en una empresa en funcionamiento.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="alert-critical">🔴 SIRENA ROJA: Proveedores (00240) a cero, pero con Aprovisionamientos. Inconsistencia grave.</div>', unsafe_allow_html=True)
         else:
-            st.markdown('<div class="alert-success">✅ Saldos de acreedores coherentes con la actividad.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="alert-success">✅ Saldos de acreedores coherentes.</div>', unsafe_allow_html=True)
             
-        st.markdown("**Evolución de Existencias (Celda 00138):**")
-        st.write(" -> ".join(ev_existencias))
+        st.markdown("**Evolución de Existencias (00138):**")
+        for e in ev_existencias: st.markdown(e, unsafe_allow_html=True)
+        
         st.markdown("**Evolución de Acreedores (00239-00249):**")
-        for a in ev_acreedores: st.caption(a)
+        for a in ev_acreedores: st.caption(a, unsafe_allow_html=True)
 
     st.markdown("---")
 
-    # --- SECCIÓN DE ANÁLISIS FINANCIERO ---
-    st.subheader("📊 2. Análisis de Masas Patrimoniales y Cuenta de Resultados")
+    # --- SECCIÓN 2: MASAS PATRIMONIALES (AQUÍ ESTABA EL ERROR VISUAL) ---
+    st.subheader("📊 2. Análisis de Masas Patrimoniales")
     
-    # KPIs Rápidos
     ult_idx = -1
+    
+    # Usamos st.container(border=True) para que los KPIs se vean bien en modo oscuro
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Ingresos", f"{datos_empresa[ult_idx]['ingresos']:,.0f} €")
-    col2.metric("Resultado Neto", f"{datos_empresa[ult_idx]['resultado_neto']:,.0f} €")
-    col3.metric("Activo Total", f"{datos_empresa[ult_idx]['activo_total']:,.0f} €")
-    col4.metric("Patrimonio Neto", f"{datos_empresa[ult_idx]['patrimonio_neto']:,.0f} €")
+    with col1:
+        with st.container(border=True):
+            st.metric("Ingresos", f"{datos_empresa[ult_idx]['ingresos']:,.0f} €")
+    with col2:
+        with st.container(border=True):
+            st.metric("Resultado Neto", f"{datos_empresa[ult_idx]['resultado_neto']:,.0f} €")
+    with col3:
+        with st.container(border=True):
+            st.metric("Activo Total", f"{datos_empresa[ult_idx]['activo_total']:,.0f} €")
+    with col4:
+        with st.container(border=True):
+            st.metric("Patrimonio Neto", f"{datos_empresa[ult_idx]['patrimonio_neto']:,.0f} €")
 
     # Gráficos
     col_g1, col_g2 = st.columns(2)
     with col_g1:
         fig = go.Figure()
-        fig.add_trace(go.Bar(name='Ingresos', x=years, y=[d['ingresos'] for d in datos_empresa], marker_color='#1E3A8A'))
+        fig.add_trace(go.Bar(name='Ingresos', x=years, y=[d['ingresos'] for d in datos_empresa], marker_color='#3B82F6'))
         fig.add_trace(go.Bar(name='Resultado Neto', x=years, y=[d['resultado_neto'] for d in datos_empresa], marker_color='#10B981'))
-        fig.update_layout(title='Evolución de Ingresos y Resultados', barmode='group', template='plotly_white')
+        fig.update_layout(title='Evolución de Ingresos y Resultados', barmode='group', template='plotly_dark')
         st.plotly_chart(fig, use_container_width=True)
         
     with col_g2:
         fig = go.Figure()
-        fig.add_trace(go.Scatter(name='Activo Total', x=years, y=[d['activo_total'] for d in datos_empresa], mode='lines+markers', line=dict(color='#DC2626', width=3)))
-        fig.add_trace(go.Scatter(name='Patrimonio Neto', x=years, y=[d['patrimonio_neto'] for d in datos_empresa], mode='lines+markers', line=dict(color='#1E3A8A', width=3)))
-        fig.update_layout(title='Evolución del Balance', template='plotly_white')
+        fig.add_trace(go.Scatter(name='Activo Total', x=years, y=[d['activo_total'] for d in datos_empresa], mode='lines+markers', line=dict(color='#EF4444', width=3)))
+        fig.add_trace(go.Scatter(name='Patrimonio Neto', x=years, y=[d['patrimonio_neto'] for d in datos_empresa], mode='lines+markers', line=dict(color='#3B82F6', width=3)))
+        fig.update_layout(title='Evolución del Balance', template='plotly_dark')
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")
 
-    # --- SECCIÓN IA PRIVADA (INFORME EJECUTIVO) ---
+    # --- SECCIÓN 3: IA PRIVADA ---
     st.subheader("🧠 3. Informe Ejecutivo redactado por IA Senior")
-    st.markdown("Esta sección utiliza un modelo de lenguaje entrenado con las reglas de análisis de 22 años de experiencia. Solo se genera si introduces tu API Key.")
     
     if st.button("Generar Informe Ejecutivo con IA"):
         if not api_key:
-            st.error("Por favor, introduce tu API Key de OpenAI en la barra lateral.")
+            st.error("Introduce tu API Key de OpenAI en la barra lateral.")
         else:
-            with st.spinner("Redactando informe ejecutivo..."):
-                # Preparar resumen para la IA
+            with st.spinner("Redactando informe con 22 años de experiencia..."):
                 summary = ""
                 for d in datos_empresa:
-                    summary += f"Año {d['year']}: Ingresos: {d['ingresos']}, RN: {d['resultado_neto']}, Activo: {d['activo_total']}, Pasivo Corriente: {d['pasivo_corriente']}, Proveedores: {d['proveedores']}, Existencias: {d['existencias_00138']}.\n"
+                    summary += f"Año {d['year']}: Ingresos: {d['ingresos']}, RN: {d['resultado_neto']}, Pasivo Corriente: {d['pasivo_corriente']}, Proveedores: {d['proveedores']}, Existencias: {d['existencias_00138']}.\n"
                 
-                rules = f"Auditoría B.2: {b2_status}. Sirena Acreedores: {sirena_acreedores}."
+                rules = f"B.2 iguales: {b2_status_ok}. Sirena Proveedores: {sirena_acreedores}."
                 
                 ai_text = generate_ai_report(api_key, summary, rules)
                 
                 st.markdown(f'<div class="ai-report">{ai_text}</div>', unsafe_allow_html=True)
 
-    # ============================================
-    # FOOTER
-    # ============================================
+    # Footer
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #6B7280; font-size: 12px;'>
-        <p><b>Auditoría Financiera Senior</b> | Desarrollado con estándares de análisis de 22 años de experiencia.</p>
-        <p>Esta web no guarda ninguno de los documentos subidos. El análisis es anónimo.</p>
+        <p>Auditoría Financiera Senior | Desarrollado con estándares de 22 años de experiencia.</p>
+        <p>Esta web no guarda ninguno de los documentos subidos. Análisis 100% anónimo.</p>
     </div>
     """, unsafe_allow_html=True)
 
 else:
-    st.info("👈 Por favor, sube al menos 2 Modelos 200 en la barra lateral para comenzar la auditoría comparativa.")
-    # Mostrar skin por defecto
+    st.info("👈 Sube al menos 2 Modelos 200 en la barra lateral para comenzar.")
     st.markdown("""
     ## Bienvenido al sistema de Auditoría Senior
-    Este sistema está diseñado para realizar un análisis profundo de los Modelos 200, detectando:
-    *   Inconsistencias en el desglose de acreedores.
-    *   Cambios en la estructura accionarial (B.2).
-    *   Variaciones anómalas en existencias y fondo de maniobra.
-    *   Redacción de informes ejecutivos mediante IA privada.
+    Este sistema realiza un análisis profundo de los Modelos 200 detectando:
+    *   Inconsistencias en acreedores (00239-00249).
+    *   Cambios en accionistas (B.2).
+    *   Variaciones en existencias (00138).
+    *   Redacción de informes con IA.
     """)

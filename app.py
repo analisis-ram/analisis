@@ -20,13 +20,13 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO (SIDEBAR NARANJA CLARITO Y BOTONES GRANDES)
+# 2. CSS MEJORADO (UN SOLO ICONO Y TEXTO EN ESPAÑOL)
 # ============================================
 st.markdown("""
 <style>
-    /* --- ESTILOS DE LA BARRA LATERAL (NARANJA MÁS CLARITO Y SUAVE) --- */
+    /* --- ESTILOS DE LA BARRA LATERAL (NARANJA CLARITO) --- */
     [data-testid="stSidebar"] { 
-        background-color: #F8B155 !important; /* Naranja clarito igual que el cajetín */
+        background-color: #F8B155 !important; 
     }
     
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
@@ -41,7 +41,7 @@ st.markdown("""
         border: 1px solid #D97706 !important;
     }
 
-    /* --- ESTILO DEL BOTÓN DE BORRAR (LETRA Y PAPELERA MÁS GORDA) --- */
+    /* --- ESTILO DEL BOTÓN DE BORRAR --- */
     [data-testid="stSidebar"] button[kind="primary"], .main button[kind="primary"] {
         font-weight: 900 !important; 
         font-size: 16px !important;  
@@ -54,7 +54,7 @@ st.markdown("""
     }
 
     /* ==========================================================
-       ESTILOS DEL CAJETÍN DE SUBIDA NARANJA
+       ESTILOS DEL CAJETÍN DE SUBIDA Y BOTÓN ÚNICO EN ESPAÑOL
        ========================================================== */
     [data-testid="stFileUploader"] label p {
         font-size: 15px !important;
@@ -102,6 +102,12 @@ st.markdown("""
         line-height: 1 !important;
     }
 
+    /* Ocultar el icono SVG que trae Streamlit por defecto para evitar duplicidad */
+    [data-testid="stFileUploaderDropzone"] button svg {
+        display: none !important;
+    }
+
+    /* Botón personalizado con un único icono y texto en español */
     [data-testid="stFileUploaderDropzone"] button,
     [data-testid="stFileUploadDropzone"] button {
         order: 1 !important;
@@ -118,16 +124,20 @@ st.markdown("""
         align-items: center !important;
         gap: 6px !important;
         box-shadow: none !important;
+        visibility: visible !important;
     }
 
-    [data-testid="stFileUploaderDropzone"] button::before {
-        content: "↑";
-        font-weight: 900;
-        font-size: 15px;
-        margin-right: 4px;
-        border-bottom: 2px solid #FFFFFF;
-        line-height: 0.8;
-        padding-bottom: 1px;
+    /* Texto limpio en español dentro del botón */
+    [data-testid="stFileUploaderDropzone"] button div,
+    [data-testid="stFileUploaderDropzone"] button span {
+        font-size: 0 !important; /* Oculta el texto original en inglés ("Browse files") */
+    }
+    
+    [data-testid="stFileUploaderDropzone"] button::after {
+        content: "⬆ Subir Modelos 200";
+        font-size: 14px !important;
+        font-weight: 700 !important;
+        color: #FFFFFF !important;
     }
 
     [data-testid="stFileUploaderDropzone"] button:hover {
@@ -354,7 +364,6 @@ def extract_data_from_pdf(pdf_file):
 
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     
-    # 1. Extraer Razón Social evitando "En calidad de: Titular"
     frases_excluidas = ["en calidad de", "titular", "representante", "colaborador", "nif", "teléfono", "apellidos y nombre"]
     for i, line in enumerate(lines):
         if "Apellidos y nombre o razón social" in line or "Apellidos y Nombre / Razón social" in line or "Denominación social" in line:
@@ -368,7 +377,6 @@ def extract_data_from_pdf(pdf_file):
             if data['empresa'] != 'Desconocida':
                 break
 
-    # 2. Extraer Año del Ejercicio buscando en todo el documento y nombre del archivo
     patrones_anio = [
         r'Ejercicio[\s\.\:\-]*?(20[12]\d)\b',
         r'Per[ií]odo impositivo[\s\S]{0,120}?\d{2}/\d{2}/(20[12]\d)',
@@ -385,19 +393,16 @@ def extract_data_from_pdf(pdf_file):
                 data['year'] = y
                 break
 
-    # Respaldo: buscar año en el nombre del archivo (ej. "IS_2022.pdf")
     if data['year'] == 0 and hasattr(pdf_file, 'name'):
         m_file = re.search(r'(20[12]\d)', pdf_file.name)
         if m_file:
             data['year'] = int(m_file.group(1))
 
-    # Respaldo adicional: buscar fechas dd/mm/20XX en primeras páginas (descartando año de presentación si hay otro anterior)
     if data['year'] == 0:
         fechas = [int(y) for y in re.findall(r'\d{2}/\d{2}/(20[12]\d)', first_pages_text) if 2015 <= int(y) <= 2030]
         if fechas:
             data['year'] = min(fechas)
 
-    # 3. Extraer NIF
     nif_empresa_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z]\d{8})', text, re.IGNORECASE)
     if nif_empresa_match:
         data['nif'] = nif_empresa_match.group(1).strip()
@@ -436,7 +441,6 @@ def extract_data_from_pdf(pdf_file):
     data['acreedores_00239'] = get_val('00239')
     data['proveedores_00240'] = get_val('00240')
     
-    # Usamos <strong> en vez de ** para que se vea en negrita dentro del HTML de Sirena Roja
     for code in ['00239', '00240', '00241', '00242', '00243', '00244', '00245', '00246', '00247', '00248', '00249']:
         val = get_val(code)
         nombre_cuenta = NOMBRES_CUENTAS.get(code, f"Cuenta {code}")
@@ -626,7 +630,7 @@ if datos_empresa and len(datos_empresa) >= 2:
     hay_errores_acreedores = any(len(d['errores_acreedores']) > 0 for d in datos_empresa)
 
     # ==========================================================
-    # SECCIÓN DE CONTACTO ARRIBA (ICONOS GRANDES Y MAIL FUNCIONAL)
+    # SECCIÓN DE CONTACTO ARRIBA
     # ==========================================================
     st.markdown("""
         <div style="margin-bottom: 25px;">
@@ -767,7 +771,7 @@ if datos_empresa and len(datos_empresa) >= 2:
     st.markdown("---")
 
     # ==========================================================
-    # 3. ANÁLISIS DE MASAS PATRIMONIALES (TAMBIÉN EN k €)
+    # 3. ANÁLISIS DE MASAS PATRIMONIALES
     # ==========================================================
     st.subheader("📈 3. Análisis de Masas Patrimoniales")
     ult_idx = -1

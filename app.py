@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO, ANIMACIONES Y MODAL GIGANTE
+# 2. CSS MEJORADO, ANIMACIONES Y MODAL CENTRAL
 # ============================================
 st.markdown("""
 <style>
@@ -51,34 +51,32 @@ st.markdown("""
     }
     .start-arrow { font-size: 80px; color: #3B82F6; animation: pulse-arrow 1.5s infinite; display: inline-block; }
 
-    /* --- ESTILOS DEL MODAL DE CARGA GIGANTE --- */
+    /* --- ESTILOS DEL MODAL DE CARGA GIGANTE Y CENTRADO --- */
     .loader-overlay {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
         background-color: rgba(0, 0, 0, 0.85);
         backdrop-filter: blur(5px);
         display: flex; justify-content: center; align-items: center;
-        z-index: 9999;
+        z-index: 99999;
     }
     
     .loader-card {
         background-color: #262730;
-        padding: 60px 80px;
+        padding: 50px 80px;
         border-radius: 30px;
         border-left: 15px solid #3B82F6;
         box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
-        width: 90vw; height: 80vh; /* Ocupa casi toda la pantalla */
-        max-width: 1200px;
+        width: 80vw; max-width: 1000px;
     }
 
     .loader-icon-container {
         position: relative;
-        width: 250px; height: 200px;
-        margin-bottom: 50px;
+        width: 200px; height: 200px; /* Ajustado para la imagen */
+        margin-bottom: 40px;
     }
 
-    /* Animación del Martillo */
     @keyframes smash {
         0% { transform: rotate(0deg); }
         30% { transform: rotate(-45deg); }
@@ -87,38 +85,32 @@ st.markdown("""
         100% { transform: rotate(0deg); }
     }
     .animated-hammer {
-        font-size: 150px;
+        font-size: 120px;
         position: absolute;
-        top: -60px; left: 60px;
+        top: -60px; left: -20px; /* Ajustado para golpear la esquina de la imagen */
         z-index: 2;
         display: inline-block;
         animation: smash 0.8s infinite;
         transform-origin: bottom right;
     }
 
-    /* Libro MOD. 200 */
-    .css-book {
-        width: 160px; height: 120px;
-        background: linear-gradient(135deg, #3B82F6, #1E3A8A);
-        color: white;
-        font-family: sans-serif; font-size: 32px; font-weight: 900;
-        display: flex; justify-content: center; align-items: center;
-        border-radius: 8px 20px 20px 8px;
-        box-shadow: 10px 10px 25px rgba(0,0,0,0.8);
-        border-left: 20px solid #1E3A8A;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    /* NUEVO: Estilo para la imagen del Modelo 200 */
+    .css-book-img {
+        width: 180px; /* Tamaño de la imagen */
+        height: auto;
         position: absolute;
         bottom: 0px; left: 0px;
         z-index: 1;
-        text-align: center; line-height: 1.1;
+        border-radius: 12px;
+        box-shadow: 10px 10px 25px rgba(0,0,0,0.8);
+        border: 1px solid #444; /* Un borde sutil por si la imagen es muy clara */
     }
 
-    .loader-title { color: #FAFAFA; font-size: 48px; font-weight: bold; margin-bottom: 15px; }
-    .loader-subtitle { color: #A0A0A0; font-size: 24px; margin-bottom: 50px; }
+    .loader-title { color: #FAFAFA; font-size: 42px; font-weight: bold; margin-bottom: 10px; }
+    .loader-subtitle { color: #A0A0A0; font-size: 22px; margin-bottom: 40px; }
 
-    /* Barra de progreso gruesa */
     .progress-container {
-        width: 80%; height: 40px;
+        width: 80%; height: 35px;
         background-color: #111111;
         border-radius: 20px;
         overflow: hidden;
@@ -127,13 +119,13 @@ st.markdown("""
     }
     .progress-bar-animated {
         height: 100%; width: 100%;
-        background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 30px, #2E7D32 30px, #2E7D32 60px);
-        background-size: 84.84px 84.84px;
+        background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 25px, #2E7D32 25px, #2E7D32 50px);
+        background-size: 70.7px 70.7px;
         animation: move-stripes 1s linear infinite;
     }
     @keyframes move-stripes {
         0% { background-position: 0 0; }
-        100% { background-position: 84.84px 0; }
+        100% { background-position: 70.7px 0; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -182,29 +174,33 @@ def extract_data_from_pdf(pdf_file):
     }
 
     # 1. EXTRAER AÑO DEL EJERCICIO
-    # Busca específicamente la palabra "Ejercicio" seguida de 4 números
-    year_match = re.search(r'Ejercicio\s*(\d{4})', text, re.IGNORECASE)
+    year_match = re.search(r'EL\s*\d{1,2}\s*\d{1,2}\s*(\d{4})', text, re.IGNORECASE)
+    if not year_match:
+        year_match = re.search(r'Ejercicio\s*(\d{4})', text, re.IGNORECASE)
+    if not year_match:
+        year_match = re.search(r'De\s*\d{2}/\d{2}/(\d{4})', text, re.IGNORECASE)
+    
     if year_match: 
         data['year'] = int(year_match.group(1))
-    else:
-        # Si falla, busca "De 01/01/2023 a 31/12/2023"
-        year_match_alt = re.search(r'De\s*\d{2}/\d{2}/(\d{4})', text)
-        if year_match_alt: data['year'] = int(year_match_alt.group(1))
 
-    # 2. EXTRAER NIF Y EMPRESA (EVITANDO AL PRESENTADOR)
-    # Buscamos el bloque exacto de "Identificación" y capturamos el NIF y el Nombre
-    # El PDF tiene: Identificación \n NIF \n B87775284 \n Apellidos y nombre o razón social \n CLOTHES RAP, S.L.
-    
-    nif_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF[\s\S]*?([A-Z]\d{8}|[A-Z0-9]\d{7}[A-Z0-9])', text, re.IGNORECASE)
+    # 2. EXTRAER NIF Y EMPRESA
+    nif_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z0-9]+)', text, re.IGNORECASE)
     if nif_match:
         data['nif'] = nif_match.group(1).strip()
     
-    empresa_match = re.search(r'Apellidos y nombre o razón social[\s\S]*?\n([A-Z0-9\s\.\,]+)', text, re.IGNORECASE)
+    empresa_match = re.search(r'Apellidos y nombre o razón social\s*\n\s*([^\n]+)', text, re.IGNORECASE)
     if empresa_match:
-        # Limpiamos la cadena de puntos, comas extra y espacios
-        nombre = empresa_match.group(1).replace('.', '').strip()
+        nombre = empresa_match.group(1).strip()
+        nombre = re.sub(r'\s+', ' ', nombre) 
         if len(nombre) > 2:
             data['empresa'] = nombre
+    else:
+        empresa_match_alt = re.search(r'Apellidos y nombre o razón social\s*([A-Z0-9\s\.\,]+)', text, re.IGNORECASE)
+        if empresa_match_alt:
+            nombre = empresa_match_alt.group(1).split('NIF')[0].strip()
+            nombre = re.sub(r'\s+', ' ', nombre)
+            if len(nombre) > 2:
+                data['empresa'] = nombre
 
     # --- EXTRACCIÓN DE DATOS NUMÉRICOS ---
     def get_val(casilla):
@@ -284,18 +280,20 @@ api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 datos_empresa = []
 
 # ============================================
-# 6. PROCESAMIENTO CON EL LOADER GIGANTE
+# 6. PROCESAMIENTO CON EL LOADER CENTRAL (CON IMAGEN)
 # ============================================
 if uploaded_files:
     for file in uploaded_files:
         loader_placeholder = st.empty()
         
+        # CAMBIO: Usamos una etiqueta <img> apuntando a tu archivo local "modelo200.png"
+        # Asegúrate de subir la imagen a tu GitHub con ese nombre exacto.
         loader_html = f"""
         <div class="loader-overlay">
             <div class="loader-card">
                 <div class="loader-icon-container">
                     <span class="animated-hammer">🔨</span>
-                    <div class="css-book">MOD.<br>200</div>
+                    <img src="modelo200.png" class="css-book-img" alt="Modelo 200">
                 </div>
                 <div class="loader-title">Auditando documento...</div>
                 <div class="loader-subtitle">{file.name}</div>
@@ -363,8 +361,8 @@ b2_status_ok = (accionistas_1 == accionistas_2 == accionistas_3)
 hay_errores_acreedores = any(len(d['errores_acreedores']) > 0 for d in datos_empresa)
 
 st.title("💼 Informe de Auditoría Financiera y Riesgo")
-# ENCABEZADO CON NOMBRE, NIF Y PERIODO DINÁMICO
-st.markdown(f"**Empresa:** {nombre_empresa} (NIF: {nif_empresa}) | **Periodo analizado:** {years[0]} - {years[-1]}")
+# ENCABEZADO CORREGIDO
+st.markdown(f"**Empresa:** {nombre_empresa} | **NIF:** {nif_empresa} | **Periodo analizado:** {years[0]} - {years[-1]}")
 st.markdown("---")
 
 st.subheader("🔍 1. Auditoría de Estructura y Desglose")

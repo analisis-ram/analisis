@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO (CAJETÍN 100% NARANJA Y SIN FLECHA)
+# 2. CSS MEJORADO (CAJETÍN 100% NARANJA Y BOTÓN DE INICIO)
 # ============================================
 st.markdown("""
 <style>
@@ -77,17 +77,14 @@ st.markdown("""
         min-height: 80px !important;
     }
 
-    /* Ocultar el bloque de instrucciones gris derecho por completo */
     [data-testid="stFileUploaderDropzoneInstructions"] {
         display: none !important;
     }
 
-    /* Ocultar icono por defecto de Streamlit */
     [data-testid="stFileUploaderDropzone"] button svg {
         display: none !important;
     }
 
-    /* Botón central unificado 100% naranja y sin flecha */
     [data-testid="stFileUploaderDropzone"] button,
     [data-testid="stFileUploadDropzone"] button {
         background-color: #14161F !important;
@@ -111,7 +108,6 @@ st.markdown("""
         font-size: 0 !important;
     }
     
-    /* Texto exacto sin flecha */
     [data-testid="stFileUploaderDropzone"] button::after {
         content: "Subir Modelos 200";
         font-size: 15px !important;
@@ -123,6 +119,24 @@ st.markdown("""
         background-color: #1F2230 !important;
         color: #FFFFFF !important;
         border-color: #262730 !important;
+    }
+
+    /* --- ESTILOS DEL BOTÓN DE ACCIÓN PRINCIPAL --- */
+    .stButton > button.btn-comenzar {
+        background-color: #F8B155 !important;
+        color: #14161F !important;
+        font-size: 18px !important;
+        font-weight: 900 !important;
+        padding: 16px 32px !important;
+        border-radius: 12px !important;
+        border: 3px solid #262730 !important;
+        width: 100% !important;
+        box-shadow: 0 8px 20px rgba(248, 177, 85, 0.3) !important;
+        transition: 0.3s;
+    }
+    .stButton > button.btn-comenzar:hover {
+        background-color: #F59E0B !important;
+        transform: translateY(-2px);
     }
 
     /* --- ESTILOS DEL BLOQUE DE CONTACTO SUPERIOR --- */
@@ -159,8 +173,8 @@ st.markdown("""
         background-color: #1EBE5D;
         transform: translateY(-2px);
     }
-    .btn-contact-mail {
-        background-color: #3B82F6;
+    .btn-contact-gmail {
+        background-color: #EA4335;
         color: #FFFFFF !important;
         padding: 12px 26px;
         border-radius: 40px;
@@ -170,24 +184,6 @@ st.markdown("""
         display: inline-flex;
         align-items: center;
         gap: 12px;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35);
-        transition: transform 0.2s, background-color 0.2s;
-    }
-    .btn-contact-mail:hover {
-        background-color: #2563EB;
-        transform: translateY(-2px);
-    }
-    .btn-contact-gmail {
-        background-color: #EA4335;
-        color: #FFFFFF !important;
-        padding: 12px 22px;
-        border-radius: 40px;
-        text-decoration: none !important;
-        font-weight: 800;
-        font-size: 16px;
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
         box-shadow: 0 4px 12px rgba(234, 67, 53, 0.35);
         transition: transform 0.2s, background-color 0.2s;
     }
@@ -343,17 +339,32 @@ def extract_data_from_pdf(pdf_file):
 
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     
-    frases_excluidas = ["en calidad de", "titular", "representante", "colaborador", "nif", "teléfono", "apellidos y nombre"]
+    frases_excluidas = [
+        "en calidad de", "titular", "representante", "colaborador", "nif", "teléfono", 
+        "apellidos y nombre", "domiciliación", "ingresar", "banco", "caja", "cuenta", 
+        "entidad", "oficina", "importe", "ejercicio", "declaración"
+    ]
+
     for i, line in enumerate(lines):
-        if "Apellidos y nombre o razón social" in line or "Apellidos y Nombre / Razón social" in line or "Denominación social" in line:
-            for offset in range(1, 5):
+        line_lower = line.lower()
+        if "apellidos y nombre o razón social" in line_lower or "apellidos y nombre / razón social" in line_lower or "denominación social" in line_lower:
+            for offset in range(1, 6):
                 if i + offset < len(lines):
                     posible = lines[i + offset].strip()
-                    es_excluida = any(excl in posible.lower() for excl in frases_excluidas)
+                    posible_lower = posible.lower()
+                    es_excluida = any(excl in posible_lower for excl in frases_excluidas)
                     if not posible.isdigit() and not es_excluida and len(posible) > 3:
                         data['empresa'] = posible
                         break
             if data['empresa'] != 'Desconocida':
+                break
+
+    if data['empresa'] == 'Desconocida':
+        for line in lines[:30]:
+            line_lower = line.lower()
+            es_excluida = any(excl in line_lower for excl in frases_excluidas)
+            if ("s.l." in line_lower or "s.a." in line_lower or "sociedad" in line_lower or "ltda" in line_lower) and not es_excluida and len(line) > 4:
+                data['empresa'] = line
                 break
 
     patrones_anio = [
@@ -455,10 +466,10 @@ def generate_ai_report(api_key, financial_summary, rules_audit):
         return f"Error al conectar con la IA: {e}"
 
 # ============================================
-# 5. INTERFAZ SIDEBAR Y GESTIÓN DE ESTADO
+# 5. GESTIÓN DE ESTADO (SESSION STATE)
 # ============================================
-if 'uploaded_files' not in st.session_state:
-    st.session_state.uploaded_files = None
+if 'datos_empresa' not in st.session_state:
+    st.session_state.datos_empresa = None
 if 'uploader_key' not in st.session_state:
     st.session_state.uploader_key = 0
 
@@ -470,40 +481,110 @@ st.sidebar.subheader("🤖 IA Privada")
 st.sidebar.markdown("Introduce tu API Key. *No se almacena.*")
 api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 
-if st.session_state.uploaded_files is not None:
+if st.session_state.datos_empresa is not None:
     st.sidebar.markdown("---")
     if st.sidebar.button("🗑️ Borrar documentos y empezar de nuevo", type="primary", use_container_width=True):
         st.session_state.clear()
         st.rerun()
 
-datos_empresa = []
-
 # ============================================
-# 6. PANTALLA PRINCIPAL Y SUBIDOR DE ARCHIVOS
+# 6. PANTALLA PRINCIPAL: SUBIDA Y BOTÓN DE INICIO
 # ============================================
-if not st.session_state.uploaded_files:
+if st.session_state.datos_empresa is None:
     st.markdown("""
         <div style="text-align: center; margin-top: 5vh; margin-bottom: 30px;">
             <h1 style="color: #F8B155; font-size: 3.5rem; font-weight: 800; margin-bottom: 20px;">TODO MODELO 200</h1>
-            <p style="font-size: 1.3rem; color: #A0A0A0;">Sube al menos 2 Modelos 200 de la misma empresa para comenzar el análisis.</p>
+            <p style="font-size: 1.3rem; color: #A0A0A0;">Sube tus Modelos 200 y haz clic en el botón inferior para comenzar el análisis.</p>
         </div>
     """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        uploaded = st.file_uploader(
-            "Arrastra aquí tus PDFs (mínimo 2)", 
+        uploaded_files = st.file_uploader(
+            "Arrastra aquí tus PDFs", 
             type="pdf", 
             accept_multiple_files=True, 
             key=f"uploader_{st.session_state.uploader_key}"
         )
-        if uploaded:
-            st.session_state.uploaded_files = uploaded
-            st.rerun()
+        
+        if uploaded_files:
+            st.markdown("<br>", unsafe_allow_html=True)
+            # Botón explícito para comenzar la extracción
+            if st.button("COMENZAR EXTRACCIÓN DATOS MODELOS 200", key="btn_iniciar", use_container_width=True):
+                img_base64 = ""
+                if os.path.exists("modelo200.png"):
+                    with open("modelo200.png", "rb") as image_file:
+                        img_base64 = base64.b64encode(image_file.read()).decode()
+
+                temp_datos = []
+                for idx, file in enumerate(uploaded_files):
+                    loader_placeholder = st.empty()
+                    
+                    if img_base64:
+                        imagen_html = f'<img src="data:image/png;base64,{img_base64}" style="width:100%; border-radius:4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);" alt="Modelo 200">'
+                    else:
+                        imagen_html = '<div style="width: 100px; height: 80px; background: linear-gradient(135deg, #3B82F6, #1E3A8A); color: white; font-size: 14px; font-weight: 900; display: flex; justify-content: center; align-items: center; border-radius: 4px;">MOD.<br>200</div>'
+
+                    loader_html = f"""
+                    <div class="loader-overlay">
+                        <div class="loader-card">
+                            <div class="printer-scene">
+                                <div class="printer-body">
+                                    <div class="printer-light"></div>
+                                    <div class="printer-slot"></div>
+                                </div>
+                                <div class="doc-input">{imagen_html}</div>
+                                <div class="doc-output">
+                                    <div class="rep-title">INFORME FINANCIERO</div>
+                                    <div class="rep-line"></div>
+                                    <div class="rep-line short"></div>
+                                    <div class="rep-line"></div>
+                                    <div class="rep-line short"></div>
+                                    <div class="rep-line"></div>
+                                    <div class="rep-chart">📊</div>
+                                </div>
+                            </div>
+                            <div class="loader-title">Extrayendo datos del Modelo 200...</div>
+                            <div class="loader-subtitle">{file.name}</div>
+                            <div class="progress-container">
+                                <div class="progress-bar-animated"></div>
+                            </div>
+                        </div>
+                    </div>
+                    """
+                    
+                    with loader_placeholder:
+                        st.markdown(loader_html, unsafe_allow_html=True)
+                        time.sleep(2.5) 
+                        
+                    try:
+                        extracted = extract_data_from_pdf(file)
+                        if extracted['year'] == 0:
+                            extracted['year'] = f"Ejercicio {idx + 1}"
+                        temp_datos.append(extracted)
+                    except Exception as e:
+                        st.error(f"Error con {file.name}: {e}")
+                    finally:
+                        loader_placeholder.empty()
+                
+                if temp_datos:
+                    temp_datos = sorted(temp_datos, key=lambda x: str(x['year']))
+                    vistos = {}
+                    for d in temp_datos:
+                        yr = str(d['year'])
+                        if yr in vistos:
+                            vistos[yr] += 1
+                            d['year_label'] = f"{yr} ({vistos[yr]})"
+                        else:
+                            vistos[yr] = 1
+                            d['year_label'] = yr
+                    
+                    st.session_state.datos_empresa = temp_datos
+                    st.rerun()
 
     st.stop()
 
-uploaded_files = st.session_state.uploaded_files
+datos_empresa = st.session_state.datos_empresa
 
 # --- BOTÓN DE REINICIO EN EL CENTRO ---
 st.markdown("---")
@@ -511,77 +592,6 @@ if st.button("🗑️ Borrar todos los archivos y actualizar la web", type="prim
     st.session_state.clear()
     st.rerun()
 st.markdown("---")
-
-img_base64 = ""
-if os.path.exists("modelo200.png"):
-    with open("modelo200.png", "rb") as image_file:
-        img_base64 = base64.b64encode(image_file.read()).decode()
-
-if uploaded_files:
-    for idx, file in enumerate(uploaded_files):
-        loader_placeholder = st.empty()
-        
-        if img_base64:
-            imagen_html = f'<img src="data:image/png;base64,{img_base64}" style="width:100%; border-radius:4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);" alt="Modelo 200">'
-        else:
-            imagen_html = '<div style="width: 100px; height: 80px; background: linear-gradient(135deg, #3B82F6, #1E3A8A); color: white; font-size: 14px; font-weight: 900; display: flex; justify-content: center; align-items: center; border-radius: 4px;">MOD.<br>200</div>'
-
-        loader_html = f"""
-        <div class="loader-overlay">
-            <div class="loader-card">
-                <div class="printer-scene">
-                    <div class="printer-body">
-                        <div class="printer-light"></div>
-                        <div class="printer-slot"></div>
-                    </div>
-                    <div class="doc-input">{imagen_html}</div>
-                    <div class="doc-output">
-                        <div class="rep-title">INFORME FINANCIERO</div>
-                        <div class="rep-line"></div>
-                        <div class="rep-line short"></div>
-                        <div class="rep-line"></div>
-                        <div class="rep-line short"></div>
-                        <div class="rep-line"></div>
-                        <div class="rep-chart">📊</div>
-                    </div>
-                </div>
-                <div class="loader-title">Extrayendo datos del Modelo 200...</div>
-                <div class="loader-subtitle">{file.name}</div>
-                <div class="progress-container">
-                    <div class="progress-bar-animated"></div>
-                </div>
-            </div>
-        </div>
-        """
-        
-        with loader_placeholder:
-            st.markdown(loader_html, unsafe_allow_html=True)
-            time.sleep(2.5) 
-            
-        try:
-            extracted = extract_data_from_pdf(file)
-            if extracted['year'] == 0:
-                extracted['year'] = f"Ejercicio {idx + 1}"
-            datos_empresa.append(extracted)
-        except Exception as e:
-            st.error(f"Error con {file.name}: {e}")
-        finally:
-            loader_placeholder.empty()
-    
-    if datos_empresa:
-        datos_empresa = sorted(datos_empresa, key=lambda x: str(x['year']))
-        vistos = {}
-        for d in datos_empresa:
-            yr = str(d['year'])
-            if yr in vistos:
-                vistos[yr] += 1
-                d['year_label'] = f"{yr} ({vistos[yr]})"
-            else:
-                vistos[yr] = 1
-                d['year_label'] = yr
-        st.success(f"✅ Se han cargado {len(datos_empresa)} años: {', '.join(d['year_label'] for d in datos_empresa)}.")
-else:
-    st.info("Esperando archivos...")
 
 # ============================================
 # 7. VALIDACIÓN DE MISMA EMPRESA
@@ -620,12 +630,6 @@ if datos_empresa and len(datos_empresa) >= 2:
                         <path d="M12.031 2C6.508 2 2.023 6.485 2.023 12.008c0 1.766.461 3.49 1.337 5.01L2 22l5.122-1.343c1.472.804 3.129 1.228 4.909 1.228 5.523 0 10.008-4.485 10.008-10.008C22.039 6.485 17.554 2 12.031 2zm5.86 14.162c-.246.693-1.428 1.326-1.996 1.411-.528.079-1.218.112-1.968-.126-.456-.145-1.04-.338-1.787-.661-3.141-1.356-5.193-4.521-5.35-4.73-.157-.209-1.278-1.701-1.278-3.245 0-1.544.808-2.303 1.095-2.617.287-.314.626-.392.835-.392.209 0 .417.002.599.011.192.009.45-.073.704.538.261.628.887 2.168.965 2.325.078.157.13.34.026.549-.104.209-.157.34-.313.523-.157.183-.329.409-.47.549-.157.156-.321.326-.138.64.183.314.812 1.34 1.744 2.171 1.199 1.069 2.21 1.4 2.523 1.557.313.157.496.131.678-.078.183-.209.782-.915.991-1.229.209-.314.417-.261.704-.157.287.105 1.825.861 2.138 1.018.313.157.522.235.599.366.079.131.079.758-.167 1.451z"/>
                     </svg>
                     <span>WhatsApp</span>
-                </a>
-                <a href="mailto:cuadrarcuentas@gmail.com?subject=Consulta%20Auditor%C3%ADa%20Modelo%20200" target="_top" class="btn-contact-mail">
-                    <svg width="34" height="34" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4.25l-8 5-8-5V6l8 5 8-5v2.25z"/>
-                    </svg>
-                    <span>Enviar Email (cuadrarcuentas@gmail.com)</span>
                 </a>
                 <a href="https://mail.google.com/mail/?view=cm&fs=1&to=cuadrarcuentas@gmail.com&su=Consulta%20Auditor%C3%ADa%20Modelo%20200" target="_blank" rel="noopener noreferrer" class="btn-contact-gmail">
                     <svg width="30" height="30" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
@@ -667,7 +671,7 @@ if datos_empresa and len(datos_empresa) >= 2:
             st.markdown("""
                 <div class="contact-banner">
                     <p>Los Proveedores no pueden estar a 0 y los Acreedores no pueden estar en negativo.</p>
-                    <p>Por favor, escríbanos a <a href="mailto:cuadrarcuentas@gmail.com" target="_top">cuadrarcuentas@gmail.com</a> o por <a href="https://wa.me/34644247796" target="_blank">WhatsApp</a> y le explicamos las soluciones.</p>
+                    <p>Por favor, escríbanos a <a href="https://mail.google.com/mail/?view=cm&fs=1&to=cuadrarcuentas@gmail.com&su=Consulta%20Auditor%C3%ADa%20Modelo%20200" target="_blank">cuadrarcuentas@gmail.com</a> o por <a href="https://wa.me/34644247796" target="_blank">WhatsApp</a> y le explicamos las soluciones.</p>
                 </div>
             """, unsafe_allow_html=True)
         else:

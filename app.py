@@ -40,28 +40,33 @@ st.markdown("""
         background-color: rgba(255, 255, 255, 0.9) !important;
     }
 
-    /* --- ESTILOS DEL ÁREA DE SUBIDA (FONDO NARANJA CLARITO) --- */
+    /* --- ESTILOS DEL ÁREA DE SUBIDA (FONDO NARANJA CLARO FORZADO) --- */
     [data-testid="stFileUploadDropzone"] {
+        background-color: #FFE0B2 !important; /* <--- NARANJA CLARO */
         border: 3px dashed #D97706 !important;
-        background-color: #FFF3E0 !important; /* Naranjita clarito */
         padding: 40px !important;
         border-radius: 20px !important;
         text-align: center;
     }
     
-    /* Textos del cajetín en naranja oscuro para contrastar */
+    /* Forzar transparencia en los divs internos para que no pongan fondo gris */
+    [data-testid="stFileUploadDropzone"] > div {
+        background-color: transparent !important;
+    }
+    
+    /* Textos del cajetín en oscuro para que contrasten con el fondo naranja claro */
     [data-testid="stFileUploadDropzone"] span, 
     [data-testid="stFileUploadDropzone"] small,
     [data-testid="stFileUploadDropzone"] p {
-        color: #D97706 !important; 
+        color: #1A1A1A !important; 
         font-weight: bold !important;
     }
 
     /* El botón de Upload */
     [data-testid="stFileUploadDropzone"] button {
-        background-color: transparent !important;
-        color: #D97706 !important; 
-        border: 2px solid #D97706 !important;
+        background-color: #D97706 !important; /* Botón naranja oscuro */
+        color: #FFFFFF !important; 
+        border: none !important;
         border-radius: 10px !important;
         padding: 10px 20px !important;
         font-weight: bold !important;
@@ -70,16 +75,12 @@ st.markdown("""
     
     /* El icono del botón Upload */
     [data-testid="stFileUploadDropzone"] button svg {
-        fill: #D97706 !important;
+        fill: #FFFFFF !important;
     }
 
-    /* Efecto al pasar el ratón por encima */
+    /* Efecto al pasar el ratón por encima del botón */
     [data-testid="stFileUploadDropzone"] button:hover {
-        background-color: #D97706 !important;
-        color: #FFFFFF !important; 
-    }
-    [data-testid="stFileUploadDropzone"] button:hover svg {
-        fill: #FFFFFF !important;
+        background-color: #B45309 !important;
     }
 
     /* --- ESTILOS GENERALES --- */
@@ -385,7 +386,7 @@ if uploaded_files:
                         <div class="rep-chart">📊</div>
                     </div>
                 </div>
-                <div class="loader-title">Extrayendo datos del Modelo 200...</div> <!-- TEXTO CAMBIADO AQUÍ -->
+                <div class="loader-title">Extrayendo datos del Modelo 200...</div>
                 <div class="loader-subtitle">{file.name}</div>
                 <div class="progress-container">
                     <div class="progress-bar-animated"></div>

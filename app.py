@@ -17,7 +17,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO, ANIMACIONES Y MODAL CENTRAL
+# 2. CSS MEJORADO, ANIMACIONES Y MODAL GIGANTE
 # ============================================
 st.markdown("""
 <style>
@@ -51,32 +51,34 @@ st.markdown("""
     }
     .start-arrow { font-size: 80px; color: #3B82F6; animation: pulse-arrow 1.5s infinite; display: inline-block; }
 
-    /* --- ESTILOS DEL MODAL DE CARGA (LOADER) --- */
+    /* --- ESTILOS DEL MODAL DE CARGA GIGANTE --- */
     .loader-overlay {
         position: fixed;
         top: 0; left: 0; width: 100vw; height: 100vh;
-        background-color: rgba(0, 0, 0, 0.7);
-        backdrop-filter: blur(4px);
+        background-color: rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(5px);
         display: flex; justify-content: center; align-items: center;
         z-index: 9999;
     }
     
     .loader-card {
         background-color: #262730;
-        padding: 40px 60px;
-        border-radius: 20px;
-        border-left: 8px solid #3B82F6;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        display: flex; flex-direction: column; align-items: center;
-        width: 800px; max-width: 90vw;
+        padding: 60px 80px;
+        border-radius: 30px;
+        border-left: 15px solid #3B82F6;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        width: 90vw; height: 80vh; /* Ocupa casi toda la pantalla */
+        max-width: 1200px;
     }
 
     .loader-icon-container {
         position: relative;
-        width: 120px; height: 100px;
-        margin-bottom: 30px;
+        width: 250px; height: 200px;
+        margin-bottom: 50px;
     }
 
+    /* Animación del Martillo */
     @keyframes smash {
         0% { transform: rotate(0deg); }
         30% { transform: rotate(-45deg); }
@@ -85,51 +87,53 @@ st.markdown("""
         100% { transform: rotate(0deg); }
     }
     .animated-hammer {
-        font-size: 70px;
+        font-size: 150px;
         position: absolute;
-        top: -30px; left: 30px;
+        top: -60px; left: 60px;
         z-index: 2;
         display: inline-block;
         animation: smash 0.8s infinite;
         transform-origin: bottom right;
     }
 
+    /* Libro MOD. 200 */
     .css-book {
-        width: 80px; height: 60px;
+        width: 160px; height: 120px;
         background: linear-gradient(135deg, #3B82F6, #1E3A8A);
         color: white;
-        font-family: sans-serif; font-size: 16px; font-weight: 900;
+        font-family: sans-serif; font-size: 32px; font-weight: 900;
         display: flex; justify-content: center; align-items: center;
-        border-radius: 4px 10px 10px 4px;
-        box-shadow: 4px 4px 10px rgba(0,0,0,0.6);
-        border-left: 10px solid #1E3A8A;
-        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        border-radius: 8px 20px 20px 8px;
+        box-shadow: 10px 10px 25px rgba(0,0,0,0.8);
+        border-left: 20px solid #1E3A8A;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         position: absolute;
         bottom: 0px; left: 0px;
         z-index: 1;
         text-align: center; line-height: 1.1;
     }
 
-    .loader-title { color: #FAFAFA; font-size: 28px; font-weight: bold; margin-bottom: 10px; }
-    .loader-subtitle { color: #A0A0A0; font-size: 18px; margin-bottom: 30px; }
+    .loader-title { color: #FAFAFA; font-size: 48px; font-weight: bold; margin-bottom: 15px; }
+    .loader-subtitle { color: #A0A0A0; font-size: 24px; margin-bottom: 50px; }
 
+    /* Barra de progreso gruesa */
     .progress-container {
-        width: 100%; height: 30px;
-        background-color: #333333;
-        border-radius: 15px;
+        width: 80%; height: 40px;
+        background-color: #111111;
+        border-radius: 20px;
         overflow: hidden;
         display: flex; align-items: center;
-        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        box-shadow: inset 0 5px 10px rgba(0,0,0,0.8);
     }
     .progress-bar-animated {
         height: 100%; width: 100%;
-        background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 20px, #2E7D32 20px, #2E7D32 40px);
-        background-size: 56.56px 56.56px;
+        background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 30px, #2E7D32 30px, #2E7D32 60px);
+        background-size: 84.84px 84.84px;
         animation: move-stripes 1s linear infinite;
     }
     @keyframes move-stripes {
         0% { background-position: 0 0; }
-        100% { background-position: 56.56px 0; }
+        100% { background-position: 84.84px 0; }
     }
 </style>
 """, unsafe_allow_html=True)
@@ -177,34 +181,29 @@ def extract_data_from_pdf(pdf_file):
         'errores_acreedores': [] 
     }
 
-    # Extraer Año
-    year_match = re.search(r'Ejercicio\s*(\d{4})', text) or re.search(r'(20\d{2})', text)
-    if year_match: data['year'] = int(year_match.group(1))
-
-    # --- CORRECCIÓN DE NIF Y EMPRESA (EVITANDO EL PRESENTADOR) ---
-    # 1. Buscamos el bloque de "Identificación" y extraemos el NIF que viene después
-    nif_titular_match = re.search(r'Identificaci[oó]n.*?NIF[\s\n]*([A-Z0-9]\d{7}[A-Z0-9])', text, re.DOTALL | re.IGNORECASE)
-    if nif_titular_match:
-        data['nif'] = nif_titular_match.group(1)
+    # 1. EXTRAER AÑO DEL EJERCICIO
+    # Busca específicamente la palabra "Ejercicio" seguida de 4 números
+    year_match = re.search(r'Ejercicio\s*(\d{4})', text, re.IGNORECASE)
+    if year_match: 
+        data['year'] = int(year_match.group(1))
     else:
-        # Fallback: buscar el NIF que NO sea el del presentador
-        nif_match = re.search(r'NIF(?!\s*Presentador)[\s\n]*([A-Z0-9]\d{7}[A-Z0-9])', text, re.IGNORECASE)
-        if nif_match: data['nif'] = nif_match.group(1)
+        # Si falla, busca "De 01/01/2023 a 31/12/2023"
+        year_match_alt = re.search(r'De\s*\d{2}/\d{2}/(\d{4})', text)
+        if year_match_alt: data['year'] = int(year_match_alt.group(1))
 
-    # 2. Buscamos el nombre en la sección de Identificación
-    empresa_titular_match = re.search(r'Identificaci[oó]n.*?(?:Apellidos y nombre o razón social|Apellidos y Nombre / Razón social)[\s\n]*([A-Z0-9\s\.\,\-]+)', text, re.DOTALL | re.IGNORECASE)
-    if empresa_titular_match:
-        nombre = empresa_titular_match.group(1).strip()
-        nombre = re.sub(r'\s+', ' ', nombre) # Limpiar saltos de línea
-        nombre = re.sub(r'[^A-Z0-9\s\.\,\-]', '', nombre).strip()
-        data['empresa'] = nombre
-    else:
-        # Fallback
-        empresa_match = re.search(r'Apellidos y nombre o razón social[\s\n]*([A-Z0-9\s\.\,\-]+)', text, re.IGNORECASE)
-        if empresa_match:
-            nombre = empresa_match.group(1).strip()
-            nombre = re.sub(r'\s+', ' ', nombre)
-            nombre = re.sub(r'[^A-Z0-9\s\.\,\-]', '', nombre).strip()
+    # 2. EXTRAER NIF Y EMPRESA (EVITANDO AL PRESENTADOR)
+    # Buscamos el bloque exacto de "Identificación" y capturamos el NIF y el Nombre
+    # El PDF tiene: Identificación \n NIF \n B87775284 \n Apellidos y nombre o razón social \n CLOTHES RAP, S.L.
+    
+    nif_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF[\s\S]*?([A-Z]\d{8}|[A-Z0-9]\d{7}[A-Z0-9])', text, re.IGNORECASE)
+    if nif_match:
+        data['nif'] = nif_match.group(1).strip()
+    
+    empresa_match = re.search(r'Apellidos y nombre o razón social[\s\S]*?\n([A-Z0-9\s\.\,]+)', text, re.IGNORECASE)
+    if empresa_match:
+        # Limpiamos la cadena de puntos, comas extra y espacios
+        nombre = empresa_match.group(1).replace('.', '').strip()
+        if len(nombre) > 2:
             data['empresa'] = nombre
 
     # --- EXTRACCIÓN DE DATOS NUMÉRICOS ---
@@ -285,7 +284,7 @@ api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 datos_empresa = []
 
 # ============================================
-# 6. PROCESAMIENTO CON EL LOADER CENTRAL
+# 6. PROCESAMIENTO CON EL LOADER GIGANTE
 # ============================================
 if uploaded_files:
     for file in uploaded_files:
@@ -336,7 +335,7 @@ if datos_empresa:
         st.stop()
 
 # ============================================
-# 8. PANTALLA DE INICIO (CENTRADA CON FLEXBOX)
+# 8. PANTALLA DE INICIO
 # ============================================
 if not datos_empresa or len(datos_empresa) < 2:
     st.markdown("""

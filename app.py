@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO, ANIMACIONES, MODAL Y BARRA LATERAL
+# 2. CSS MEJORADO Y FORZADO
 # ============================================
 st.markdown("""
 <style>
@@ -41,18 +41,18 @@ st.markdown("""
     }
 
     /* --- ESTILO DEL BOTÓN DE BORRAR (LETRA Y PAPELERA MÁS GORDA) --- */
-    [data-testid="stSidebar"] button[kind="primary"] {
+    [data-testid="stSidebar"] button[kind="primary"], .main button[kind="primary"] {
         font-weight: 900 !important; 
         font-size: 16px !important;  
         border-radius: 8px !important;
         padding: 10px !important;
     }
-    [data-testid="stSidebar"] button[kind="primary"] p {
+    [data-testid="stSidebar"] button[kind="primary"] p, .main button[kind="primary"] p {
         font-weight: 900 !important;
         font-size: 16px !important;
     }
 
-    /* --- ESTILOS DEL ÁREA DE SUBIDA (FONDO NARANJA CLARO FORZADO) --- */
+    /* --- ESTILOS DEL ÁREA DE SUBIDA (NARANJA CLARO FORZADO) --- */
     [data-testid="stFileUploadDropzone"] {
         background-color: #FFE0B2 !important; /* Fondo naranja claro */
         border: 3px dashed #D97706 !important;
@@ -61,37 +61,31 @@ st.markdown("""
         text-align: center;
     }
     
-    /* Forzar transparencia en TODOS los divs internos para que no pongan fondo gris */
+    /* REGLA AGRESIVA: Obligamos a TODOS los divs internos a ser transparentes */
     [data-testid="stFileUploadDropzone"] div,
-    [data-testid="stFileUploadDropzone"] section {
+    [data-testid="stFileUploadDropzone"] span,
+    [data-testid="stFileUploadDropzone"] section,
+    [data-testid="stFileUploadDropzone"] small {
         background-color: transparent !important;
-    }
-    
-    /* Textos del cajetín en oscuro para contrastar */
-    [data-testid="stFileUploadDropzone"] span, 
-    [data-testid="stFileUploadDropzone"] small,
-    [data-testid="stFileUploadDropzone"] p {
         color: #1A1A1A !important; 
         font-weight: bold !important;
     }
 
-    /* El botón de Upload */
+    /* El botón de Upload (restauramos su color para que no sea transparente) */
     [data-testid="stFileUploadDropzone"] button {
-        background-color: #D97706 !important; /* Botón naranja oscuro */
+        background-color: #D97706 !important; 
         color: #FFFFFF !important; 
         border: none !important;
         border-radius: 10px !important;
         padding: 10px 20px !important;
         font-weight: bold !important;
-        transition: 0.3s;
     }
-    
-    /* El icono del botón Upload */
+    [data-testid="stFileUploadDropzone"] button span {
+        color: #FFFFFF !important;
+    }
     [data-testid="stFileUploadDropzone"] button svg {
         fill: #FFFFFF !important;
     }
-
-    /* Efecto al pasar el ratón por encima del botón */
     [data-testid="stFileUploadDropzone"] button:hover {
         background-color: #B45309 !important;
     }
@@ -337,8 +331,7 @@ api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 if st.session_state.uploaded_files is not None:
     st.sidebar.markdown("---")
     if st.sidebar.button("🗑️ Borrar documentos y empezar de nuevo", type="primary", use_container_width=True):
-        st.session_state.uploaded_files = None
-        st.session_state.uploader_key += 1
+        st.session_state.clear()
         st.rerun()
 
 datos_empresa = []
@@ -364,6 +357,13 @@ if not st.session_state.uploaded_files:
     st.stop()
 
 uploaded_files = st.session_state.uploaded_files
+
+# --- BOTÓN DE REINICIO EN EL CENTRO (Muy visible cuando ya hay archivos) ---
+st.markdown("---")
+if st.button("🗑️ Borrar todos los archivos y actualizar la web", type="primary", use_container_width=True):
+    st.session_state.clear()
+    st.rerun()
+st.markdown("---")
 
 img_base64 = ""
 if os.path.exists("modelo200.png"):

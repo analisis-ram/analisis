@@ -20,13 +20,13 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO (CAJETÍN GIGANTE Y BOTÓN AZUL ANCHO)
+# 2. CSS MEJORADO Y FORZADO
 # ============================================
 st.markdown("""
 <style>
-    /* --- ESTILOS DE LA BARRA LATERAL (NARANJA CLARITO) --- */
+    /* --- ESTILOS DE LA BARRA LATERAL (NARANJA APAGADO) --- */
     [data-testid="stSidebar"] { 
-        background-color: #F8B155 !important; 
+        background-color: #D97706 !important; 
     }
     
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
@@ -37,8 +37,7 @@ st.markdown("""
     }
     [data-testid="stSidebar"] input {
         color: #1A1A1A !important;
-        background-color: #FFFFFF !important;
-        border: 1px solid #D97706 !important;
+        background-color: rgba(255, 255, 255, 0.9) !important;
     }
 
     /* --- ESTILO DEL BOTÓN DE BORRAR --- */
@@ -53,157 +52,44 @@ st.markdown("""
         font-size: 16px !important;
     }
 
-    /* ==========================================================
-       ESTILOS DEL CAJETÍN DE SUBIDA (EXTRAGRANDE)
-       ========================================================== */
-    [data-testid="stFileUploader"] label p {
-        font-size: 16px !important;
-        font-weight: 700 !important;
-        color: #FAFAFA !important;
-        margin-bottom: 8px !important;
-    }
-
-    [data-testid="stFileUploaderDropzone"],
-    [data-testid="stFileUploadDropzone"],
-    section[data-testid="stFileUploaderDropzone"] {
-        background-color: #F8B155 !important;
-        border: 3px dashed #262730 !important;
-        border-radius: 16px !important;
-        padding: 30px !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: stretch !important;
-        justify-content: flex-start !important;
-        min-height: 320px !important;  /* Altura mínima mucho mayor para ver ficheros sin solaparse */
-        max-height: 480px !important;  /* Altura máxima generosa */
-        overflow-y: auto !important;
-    }
-
-    [data-testid="stFileUploaderDropzoneInstructions"] {
-        display: none !important;
-    }
-
-    [data-testid="stFileUploaderDropzone"] button svg {
-        display: none !important;
-    }
-
-    /* Botón de subida en color AZUL, ancho y con texto en una sola línea */
-    [data-testid="stFileUploaderDropzone"] button,
-    [data-testid="stFileUploadDropzone"] button {
-        background-color: #3B82F6 !important;  /* Color azul profesional */
-        color: #FFFFFF !important;
-        border: 2px solid #1E3A8A !important;
-        border-radius: 10px !important;
-        padding: 0 32px !important;
-        min-width: 260px !important;  /* Ancho mínimo garantizado para que quepa el texto */
-        height: 52px !important;
-        font-weight: 800 !important;
-        font-size: 16px !important;
-        white-space: nowrap !important; /* Evita que el texto salte de línea */
-        margin: 10px auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
-        visibility: visible !important;
-    }
-
-    [data-testid="stFileUploaderDropzone"] button div,
-    [data-testid="stFileUploaderDropzone"] button span {
-        font-size: 0 !important;
+    /* --- ESTILOS DEL ÁREA DE SUBIDA (NARANJA CLARO FORZADO) --- */
+    [data-testid="stFileUploadDropzone"] {
+        background-color: #FFB03A !important; 
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 20px !important;
     }
     
-    [data-testid="stFileUploaderDropzone"] button::after {
-        content: "Subir Modelos 200";
-        font-size: 16px !important;
-        font-weight: 800 !important;
-        color: #FFFFFF !important;
-        white-space: nowrap !important;
+    [data-testid="stFileUploadDropzone"] div,
+    [data-testid="stFileUploadDropzone"] section {
+        background-color: transparent !important;
     }
 
-    [data-testid="stFileUploaderDropzone"] button:hover {
-        background-color: #2563EB !important;
-        border-color: #1E3A8A !important;
+    [data-testid="stFileUploadDropzone"] small {
+        color: #1A1A1A !important; 
+        font-weight: 600 !important;
+        font-size: 14px !important;
     }
 
-    /* --- ESTILOS DEL BOTÓN DE ACCIÓN PRINCIPAL --- */
-    .stButton > button {
-        background-color: #F8B155 !important;
-        color: #14161F !important;
-        font-size: 20px !important;
-        font-weight: 900 !important;
-        padding: 20px 36px !important;
-        border-radius: 14px !important;
-        border: 4px solid #14161F !important;
-        width: 100% !important;
-        box-shadow: 0 10px 25px rgba(248, 177, 85, 0.4) !important;
+    [data-testid="stFileUploadDropzone"] button {
+        background-color: #1A1A1A !important; 
+        color: #FFFFFF !important; 
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 8px 16px !important;
+        font-weight: bold !important;
         transition: 0.3s;
     }
-    .stButton > button:hover {
-        background-color: #F59E0B !important;
-        transform: translateY(-2px);
-    }
-
-    /* --- ESTILOS DEL BLOQUE DE CONTACTO SUPERIOR --- */
-    .contact-header-title {
-        font-size: 20px;
-        font-weight: 800;
-        color: #F8B155;
-        margin-bottom: 12px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-    }
-    .contact-buttons-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
-        margin-bottom: 25px;
-        align-items: center;
-    }
-    .btn-contact-wa {
-        background-color: #25D366;
-        color: #FFFFFF !important;
-        padding: 12px 26px;
-        border-radius: 40px;
-        text-decoration: none !important;
-        font-weight: 800;
-        font-size: 17px;
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        box-shadow: 0 4px 12px rgba(37, 211, 102, 0.35);
-        transition: transform 0.2s, background-color 0.2s;
-    }
-    .btn-contact-wa:hover {
-        background-color: #1EBE5D;
-        transform: translateY(-2px);
-    }
-    .btn-contact-gmail {
-        background-color: #EA4335;
-        color: #FFFFFF !important;
-        padding: 12px 26px;
-        border-radius: 40px;
-        text-decoration: none !important;
-        font-weight: 800;
-        font-size: 17px;
-        display: inline-flex;
-        align-items: center;
-        gap: 12px;
-        box-shadow: 0 4px 12px rgba(234, 67, 53, 0.35);
-        transition: transform 0.2s, background-color 0.2s;
-    }
-    .btn-contact-gmail:hover {
-        background-color: #D33426;
-        transform: translateY(-2px);
-    }
+    [data-testid="stFileUploadDropzone"] button span { color: #FFFFFF !important; }
+    [data-testid="stFileUploadDropzone"] button svg { fill: #FFFFFF !important; }
+    [data-testid="stFileUploadDropzone"] button:hover { background-color: #333333 !important; }
 
     /* --- ESTILOS GENERALES --- */
     .block-container { padding-top: 2rem; }
     [data-testid="collapsedControl"] { display: none !important; }
     [data-testid="stSidebarHeader"] button { display: none !important; }
     div[data-testid="stSidebar"] { min-width: 320px !important; max-width: 320px !important; }
-    h1 a { display: none !important; }
-
+    
     /* Alertas */
     .alert-critical { background-color: #EF4444; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
     .alert-warning { background-color: #F59E0B; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
@@ -229,7 +115,7 @@ st.markdown("""
     }
     .loader-card {
         background-color: #262730; padding: 50px 80px; border-radius: 30px;
-        border-left: 15px solid #F8B155; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+        border-left: 15px solid #D97706; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         width: 80vw; max-width: 800px;
     }
@@ -309,27 +195,22 @@ NOMBRES_CUENTAS = {
 }
 
 # ============================================
-# 3. FUNCIONES DE EXTRACCIÓN DE PDF (OPTIMIZADA)
+# 3. FUNCIONES DE EXTRACCIÓN DE PDF (AMPLIADAS)
 # ============================================
 def parse_spanish_number(num_str):
-    if not num_str:
-        return None
+    if not num_str: return None
     try:
         return float(num_str.replace('.', '').replace(',', '.').strip())
-    except:
-        return None
+    except: return None
 
 def extract_data_from_pdf(pdf_file):
     text = ""
-    first_pages_text = ""
     with pdfplumber.open(pdf_file) as pdf:
-        for idx, page in enumerate(pdf.pages):
+        for page in pdf.pages:
             extracted = page.extract_text()
-            if extracted:
-                text += extracted + "\n"
-                if idx < 4:
-                    first_pages_text += extracted + "\n"
+            if extracted: text += extracted + "\n"
     
+    # Inicializamos todos los campos posibles a 0 o None
     data = {
         'year': 0, 'nif': 'Desconocido', 'empresa': 'Desconocida', 
         'ingresos': 0.0, 'aprovisionamientos': 0.0, 
@@ -339,116 +220,65 @@ def extract_data_from_pdf(pdf_file):
         'tesoreria': 0.0, 'deuda_bancaria': 0.0, 'base_imponible': 0.0,
         'existencias_00138': None, 'acreedores_00239': None, 
         'proveedores_00240': None, 'accionistas_b2': [],
-        'errores_acreedores': [] 
+        'errores_acreedores': [],
+        
+        # Nuevos campos para las solapas de Excel
+        'inmovilizado_material': 0.0, 'inversiones_inmobiliarias': 0.0,
+        'inv_fin_largo_plazo': 0.0, 'activos_imp_diferido': 0.0,
+        'existencias_comerciales': 0.0, 'inv_fin_corto_plazo': 0.0,
+        'deudores_varios': 0.0, 'periodificaciones_cp': 0.0,
+        'capital': 0.0, 'reservas': 0.0, 'subvenciones': 0.0,
+        'deuda_lp': 0.0, 'acreedores_comerciales': 0.0, 'deudas_fiscales': 0.0,
+        'otras_deudas_cp': 0.0, 'deuda_bancaria_cp': 0.0,
+        'gastos_personal_prod': 0.0, 'gastos_personal_est': 0.0,
+        'otros_gastos_explot': 0.0, 'servicios_exteriores': 0.0,
+        'tributos': 0.0, 'gastos_financieros': 0.0,
+        'resultado_financiero': 0.0
     }
 
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     
-    # 1. Extraer NIF primero para usarlo como ancla de seguridad si es necesario
+    for i, line in enumerate(lines):
+        if "Ejercicio" in line or "De 01/01/" in line or "EL 1 1 " in line:
+            year_match = re.search(r'(20\d{2})', line)
+            if year_match: data['year'] = int(year_match.group(1))
+        
+        if "Apellidos y nombre o razón social" in line or "Apellidos y Nombre / Razón social" in line:
+            if i + 1 < len(lines):
+                posible_nombre = lines[i+1]
+                if not posible_nombre.isdigit() and "NIF" not in posible_nombre and "Teléfono" not in posible_nombre and len(posible_nombre) > 3:
+                    data['empresa'] = posible_nombre
+                    break 
+
     nif_empresa_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z]\d{8})', text, re.IGNORECASE)
     if nif_empresa_match:
         data['nif'] = nif_empresa_match.group(1).strip()
     else:
         nif_empresa_match = re.search(r'\b([A-Z]\d{8})\b', text)
-        if nif_empresa_match:
-            data['nif'] = nif_empresa_match.group(1).strip()
-        else:
-            nif_dni_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*(\d{8}[A-Z])', text, re.IGNORECASE)
-            if nif_dni_match:
-                data['nif'] = nif_dni_match.group(1).strip()
-
-    # 2. Extracción ultrarrobusta de la Razón Social
-    frases_excluidas = [
-        "vía de entrada", "presentación", "por internet", "en calidad de", "titular", 
-        "representante", "colaborador", "nif", "teléfono", "apellidos y nombre", 
-        "domiciliación", "ingresar", "banco", "caja", "cuenta", "entidad", "oficina", 
-        "importe", "ejercicio", "declaración", "modelo 200", "página"
-    ]
-
-    for i, line in enumerate(lines):
-        line_lower = line.lower()
-        if "apellidos y nombre o razón social" in line_lower or "apellidos y nombre / razón social" in line_lower or "denominación social" in line_lower:
-            for offset in range(1, 6):
-                if i + offset < len(lines):
-                    posible = lines[i + offset].strip()
-                    posible_lower = posible.lower()
-                    es_excluida = any(excl in posible_lower for excl in frases_excluidas)
-                    if not posible.isdigit() and not es_excluida and len(posible) > 3:
-                        data['empresa'] = posible
-                        break
-            if data['empresa'] != 'Desconocida':
-                break
-
-    if data['empresa'] == 'Desconocida' and data['nif'] != 'Desconocido':
-        for i, line in enumerate(lines):
-            if data['nif'] in line:
-                for offset in [-1, 1, -2, 2]:
-                    if 0 <= i + offset < len(lines):
-                        posible = lines[i + offset].strip()
-                        posible_lower = posible.lower()
-                        es_excluida = any(excl in posible_lower for excl in frases_excluidas)
-                        if not posible.isdigit() and not es_excluida and len(posible) > 3 and data['nif'] not in posible:
-                            data['empresa'] = posible
-                            break
-                if data['empresa'] != 'Desconocida':
-                    break
-
-    if data['empresa'] == 'Desconocida':
-        for line in lines[:40]:
-            line_lower = line.lower()
-            es_excluida = any(excl in line_lower for excl in frases_excluidas)
-            if ("s.l." in line_lower or "s.a." in line_lower or "sociedad" in line_lower or "ltda" in line_lower or "s.l.u." in line_lower) and not es_excluida and len(line) > 4:
-                data['empresa'] = line
-                break
-
-    # 3. Extraer Año del Ejercicio
-    patrones_anio = [
-        r'Ejercicio[\s\.\:\-]*?(20[12]\d)\b',
-        r'Per[ií]odo impositivo[\s\S]{0,120}?\d{2}/\d{2}/(20[12]\d)',
-        r'De\s+01/01/(20[12]\d)',
-        r'al\s+31/12/(20[12]\d)',
-        r'EL\s+1\s+1\s+(20[12]\d)',
-        r'devengo[\s\S]{0,60}?(20[12]\d)'
-    ]
-    for pat in patrones_anio:
-        m = re.search(pat, text, re.IGNORECASE)
-        if m:
-            y = int(m.group(1))
-            if 2010 <= y <= 2030:
-                data['year'] = y
-                break
-
-    if data['year'] == 0 and hasattr(pdf_file, 'name'):
-        m_file = re.search(r'(20[12]\d)', pdf_file.name)
-        if m_file:
-            data['year'] = int(m_file.group(1))
-
-    if data['year'] == 0:
-        fechas = [int(y) for y in re.findall(r'\d{2}/\d{2}/(20[12]\d)', first_pages_text) if 2015 <= int(y) <= 2030]
-        if fechas:
-            data['year'] = min(fechas)
+        if nif_empresa_match: data['nif'] = nif_empresa_match.group(1).strip()
 
     def get_val(casilla):
-        pattern = rf"\b{casilla}\b.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
+        pattern = rf"{casilla}.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
         match = re.search(pattern, text)
-        if match:
+        if match: 
             return parse_spanish_number(match.group(1))
-        return None 
+        return 0.0 # Retornamos 0.0 para facilitar los DataFrames
 
-    data['ingresos'] = get_val('00255') or 0.0
-    data['aprovisionamientos'] = abs(get_val('00260') or 0.0)
-    data['gastos_personal'] = abs(get_val('00270') or 0.0)
-    data['amortizacion'] = abs(get_val('00284') or 0.0)
-    data['resultado_explotacion'] = get_val('00296') or 0.0
-    data['resultado_neto'] = get_val('00500') or 0.0
-    data['activo_total'] = get_val('00180') or 0.0
-    data['patrimonio_neto'] = get_val('00185') or 0.0
-    data['pasivo_no_corriente'] = get_val('00210') or 0.0
-    data['pasivo_corriente'] = get_val('00228') or 0.0
-    data['clientes'] = get_val('00149') or 0.0
-    data['tesoreria'] = get_val('00177') or 0.0
-    data['deuda_bancaria'] = get_val('00218') or 0.0
-    data['base_imponible'] = get_val('00552') or 0.0
+    # --- EXTRACCIÓN DE DATOS (RESUMEN) ---
+    data['ingresos'] = get_val('00255')
+    data['aprovisionamientos'] = abs(get_val('00260'))
+    data['gastos_personal'] = abs(get_val('00270'))
+    data['amortizacion'] = abs(get_val('00284'))
+    data['resultado_explotacion'] = get_val('00296')
+    data['resultado_neto'] = get_val('00500')
+    data['activo_total'] = get_val('00180')
+    data['patrimonio_neto'] = get_val('00185')
+    data['pasivo_no_corriente'] = get_val('00210')
+    data['pasivo_corriente'] = get_val('00228')
+    data['clientes'] = get_val('00149')
+    data['tesoreria'] = get_val('00177')
+    data['deuda_bancaria'] = get_val('00218')
+    data['base_imponible'] = get_val('00552')
     
     data['existencias_00138'] = get_val('00138')
     data['acreedores_00239'] = get_val('00239')
@@ -458,9 +288,9 @@ def extract_data_from_pdf(pdf_file):
         val = get_val(code)
         nombre_cuenta = NOMBRES_CUENTAS.get(code, f"Cuenta {code}")
         if val is not None and val < 0:
-            data['errores_acreedores'].append(f"La cuenta <strong>{nombre_cuenta} ({code})</strong> está en NEGATIVO ({val:,.2f} €).")
+            data['errores_acreedores'].append(f"La cuenta **{nombre_cuenta} ({code})** está en NEGATIVO ({val:,.2f} €).")
         if code == '00240' and (val is None or val == 0):
-            data['errores_acreedores'].append(f"La cuenta <strong>{nombre_cuenta} ({code})</strong> está VACÍA o a CERO.")
+            data['errores_acreedores'].append(f"La cuenta **{nombre_cuenta} ({code})** está VACÍA o a CERO.")
             
     b2_match = re.search(r'B\.2\.\s+Participaciones de personas.*?(?=C\.|D\.|$)', text, re.DOTALL | re.IGNORECASE)
     if b2_match:
@@ -468,6 +298,35 @@ def extract_data_from_pdf(pdf_file):
         nifs = re.findall(r'\b[A-Z0-9]\d{7}[A-Z0-9]\b', b2_text)
         nifs_clean = [n for n in nifs if n != data['nif']]
         data['accionistas_b2'] = sorted(list(set(nifs_clean)))
+
+    # --- EXTRACCIÓN DE DATOS DETALLADOS (PARA TABS) ---
+    data['inmovilizado_material'] = get_val('00111') # A veces 00212
+    data['inversiones_inmobiliarias'] = get_val('00115')
+    data['inv_fin_largo_plazo'] = get_val('00126')
+    data['activos_imp_diferido'] = get_val('00134')
+    
+    data['existencias_comerciales'] = get_val('00138') # Usamos total existencias
+    data['inv_fin_corto_plazo'] = get_val('00168')
+    data['deudores_varios'] = get_val('00159')
+    data['periodificaciones_cp'] = get_val('00176')
+    
+    data['capital'] = get_val('00187')
+    data['reservas'] = get_val('00193')
+    data['subvenciones'] = get_val('00209')
+    data['deuda_lp'] = get_val('00218') + get_val('00219') + get_val('00222') # Suma aprox
+    
+    data['acreedores_comerciales'] = get_val('00239')
+    data['deudas_fiscales'] = get_val('00247')
+    data['otras_deudas_cp'] = get_val('00237') + get_val('00249')
+    data['deuda_bancaria_cp'] = get_val('00233')
+    
+    data['gastos_personal_prod'] = get_val('00270') # A veces no está desglosado, ponemos el total
+    data['gastos_personal_est'] = 0.0 
+    data['otros_gastos_explot'] = get_val('00279')
+    data['servicios_exteriores'] = get_val('00280')
+    data['tributos'] = get_val('00281')
+    data['gastos_financieros'] = get_val('00305')
+    data['resultado_financiero'] = get_val('00324')
 
     return data
 
@@ -489,10 +348,10 @@ def generate_ai_report(api_key, financial_summary, rules_audit):
         return f"Error al conectar con la IA: {e}"
 
 # ============================================
-# 5. GESTIÓN DE ESTADO (SESSION STATE)
+# 5. INTERFAZ SIDEBAR Y GESTIÓN DE ESTADO
 # ============================================
-if 'datos_empresa' not in st.session_state:
-    st.session_state.datos_empresa = None
+if 'uploaded_files' not in st.session_state:
+    st.session_state.uploaded_files = None
 if 'uploader_key' not in st.session_state:
     st.session_state.uploader_key = 0
 
@@ -504,109 +363,36 @@ st.sidebar.subheader("🤖 IA Privada")
 st.sidebar.markdown("Introduce tu API Key. *No se almacena.*")
 api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 
-if st.session_state.datos_empresa is not None:
+# --- BOTÓN DE BORRAR EN LA BARRA LATERAL ---
+if st.session_state.uploaded_files is not None:
     st.sidebar.markdown("---")
     if st.sidebar.button("🗑️ Borrar documentos y empezar de nuevo", type="primary", use_container_width=True):
         st.session_state.clear()
         st.rerun()
 
+datos_empresa = []
+
 # ============================================
-# 6. PANTALLA PRINCIPAL: SUBIDA Y BOTÓN DE INICIO
+# 6. PANTALLA PRINCIPAL Y SUBIDOR DE ARCHIVOS
 # ============================================
-if st.session_state.datos_empresa is None:
+if not st.session_state.uploaded_files:
     st.markdown("""
         <div style="text-align: center; margin-top: 5vh; margin-bottom: 30px;">
-            <h1 style="color: #F8B155; font-size: 3.5rem; font-weight: 800; margin-bottom: 20px;">TODO MODELO 200</h1>
-            <p style="font-size: 1.3rem; color: #A0A0A0;">Sube tus Modelos 200 y haz clic en el botón inferior para comenzar el análisis.</p>
+            <h1 style="color: #D97706; font-size: 3.5rem; margin-bottom: 20px;">TODO MODELO 200</h1>
+            <p style="font-size: 1.3rem; color: #A0A0A0;">Sube al menos 2 Modelos 200 de la misma empresa para comenzar el análisis.</p>
         </div>
     """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        uploaded_files = st.file_uploader(
-            "Arrastra aquí tus PDFs", 
-            type="pdf", 
-            accept_multiple_files=True, 
-            key=f"uploader_{st.session_state.uploader_key}"
-        )
-        
-        if uploaded_files:
-            st.markdown("<br>", unsafe_allow_html=True)
-            if st.button("COMENZAR EXTRACCIÓN DATOS MODELOS 200", key="btn_iniciar", use_container_width=True):
-                img_base64 = ""
-                if os.path.exists("modelo200.png"):
-                    with open("modelo200.png", "rb") as image_file:
-                        img_base64 = base64.b64encode(image_file.read()).decode()
-
-                temp_datos = []
-                for idx, file in enumerate(uploaded_files):
-                    loader_placeholder = st.empty()
-                    
-                    if img_base64:
-                        imagen_html = f'<img src="data:image/png;base64,{img_base64}" style="width:100%; border-radius:4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);" alt="Modelo 200">'
-                    else:
-                        imagen_html = '<div style="width: 100px; height: 80px; background: linear-gradient(135deg, #3B82F6, #1E3A8A); color: white; font-size: 14px; font-weight: 900; display: flex; justify-content: center; align-items: center; border-radius: 4px;">MOD.<br>200</div>'
-
-                    loader_html = f"""
-                    <div class="loader-overlay">
-                        <div class="loader-card">
-                            <div class="printer-scene">
-                                <div class="printer-body">
-                                    <div class="printer-light"></div>
-                                    <div class="printer-slot"></div>
-                                </div>
-                                <div class="doc-input">{imagen_html}</div>
-                                <div class="doc-output">
-                                    <div class="rep-title">INFORME FINANCIERO</div>
-                                    <div class="rep-line"></div>
-                                    <div class="rep-line short"></div>
-                                    <div class="rep-line"></div>
-                                    <div class="rep-line short"></div>
-                                    <div class="rep-line"></div>
-                                    <div class="rep-chart">📊</div>
-                                </div>
-                            </div>
-                            <div class="loader-title">Extrayendo datos del Modelo 200...</div>
-                            <div class="loader-subtitle">{file.name}</div>
-                            <div class="progress-container">
-                                <div class="progress-bar-animated"></div>
-                            </div>
-                        </div>
-                    </div>
-                    """
-                    
-                    with loader_placeholder:
-                        st.markdown(loader_html, unsafe_allow_html=True)
-                        time.sleep(2.5) 
-                        
-                    try:
-                        extracted = extract_data_from_pdf(file)
-                        if extracted['year'] == 0:
-                            extracted['year'] = f"Ejercicio {idx + 1}"
-                        temp_datos.append(extracted)
-                    except Exception as e:
-                        st.error(f"Error con {file.name}: {e}")
-                    finally:
-                        loader_placeholder.empty()
-                
-                if temp_datos:
-                    temp_datos = sorted(temp_datos, key=lambda x: str(x['year']))
-                    vistos = {}
-                    for d in temp_datos:
-                        yr = str(d['year'])
-                        if yr in vistos:
-                            vistos[yr] += 1
-                            d['year_label'] = f"{yr} ({vistos[yr]})"
-                        else:
-                            vistos[yr] = 1
-                            d['year_label'] = yr
-                    
-                    st.session_state.datos_empresa = temp_datos
-                    st.rerun()
+        uploaded = st.file_uploader("Arrastra aquí tus PDFs (mínimo 2)", type="pdf", accept_multiple_files=True, key=f"uploader_{st.session_state.uploader_key}")
+        if uploaded:
+            st.session_state.uploaded_files = uploaded
+            st.rerun()
 
     st.stop()
 
-datos_empresa = st.session_state.datos_empresa
+uploaded_files = st.session_state.uploaded_files
 
 # --- BOTÓN DE REINICIO EN EL CENTRO ---
 st.markdown("---")
@@ -614,6 +400,66 @@ if st.button("🗑️ Borrar todos los archivos y actualizar la web", type="prim
     st.session_state.clear()
     st.rerun()
 st.markdown("---")
+
+img_base64 = ""
+if os.path.exists("modelo200.png"):
+    with open("modelo200.png", "rb") as image_file:
+        img_base64 = base64.b64encode(image_file.read()).decode()
+
+if uploaded_files:
+    for file in uploaded_files:
+        loader_placeholder = st.empty()
+        
+        if img_base64:
+            imagen_html = f'<img src="data:image/png;base64,{img_base64}" style="width:100%; border-radius:4px; box-shadow: 0 4px 8px rgba(0,0,0,0.5);" alt="Modelo 200">'
+        else:
+            imagen_html = '<div style="width: 100px; height: 80px; background: linear-gradient(135deg, #3B82F6, #1E3A8A); color: white; font-size: 14px; font-weight: 900; display: flex; justify-content: center; align-items: center; border-radius: 4px;">MOD.<br>200</div>'
+
+        loader_html = f"""
+        <div class="loader-overlay">
+            <div class="loader-card">
+                <div class="printer-scene">
+                    <div class="printer-body">
+                        <div class="printer-light"></div>
+                        <div class="printer-slot"></div>
+                    </div>
+                    <div class="doc-input">{imagen_html}</div>
+                    <div class="doc-output">
+                        <div class="rep-title">INFORME FINANCIERO</div>
+                        <div class="rep-line"></div>
+                        <div class="rep-line short"></div>
+                        <div class="rep-line"></div>
+                        <div class="rep-line short"></div>
+                        <div class="rep-line"></div>
+                        <div class="rep-chart">📊</div>
+                    </div>
+                </div>
+                <div class="loader-title">Extrayendo datos del Modelo 200...</div>
+                <div class="loader-subtitle">{file.name}</div>
+                <div class="progress-container">
+                    <div class="progress-bar-animated"></div>
+                </div>
+            </div>
+        </div>
+        """
+        
+        with loader_placeholder:
+            st.markdown(loader_html, unsafe_allow_html=True)
+            time.sleep(2.5) 
+            
+        try:
+            extracted = extract_data_from_pdf(file)
+            datos_empresa.append(extracted)
+        except Exception as e:
+            st.error(f"Error con {file.name}")
+        finally:
+            loader_placeholder.empty()
+    
+    if datos_empresa:
+        datos_empresa = sorted(datos_empresa, key=lambda x: x['year'])
+        st.success(f"✅ Se han cargado {len(datos_empresa)} años.")
+else:
+    st.info("Esperando archivos...")
 
 # ============================================
 # 7. VALIDACIÓN DE MISMA EMPRESA
@@ -626,220 +472,352 @@ if datos_empresa:
         st.stop()
 
 # ============================================
-# 8. RENDERIZADO PRINCIPAL (DASHBOARD Y GRÁFICAS)
+# 8. RENDERIZADO PRINCIPAL CON PESTAÑAS (TABS)
 # ============================================
 if datos_empresa and len(datos_empresa) >= 2:
     nombre_empresa = datos_empresa[0]['empresa']
     nif_empresa = datos_empresa[0]['nif']
-    years_str = [d['year_label'] for d in datos_empresa]
+    years = [d['year'] for d in datos_empresa]
 
-    accionistas_1 = datos_empresa[0]['accionistas_b2']
-    accionistas_2 = datos_empresa[1]['accionistas_b2']
-    accionistas_3 = datos_empresa[2]['accionistas_b2'] if len(datos_empresa) > 2 else accionistas_2
-    b2_status_ok = (accionistas_1 == accionistas_2 == accionistas_3)
+    st.title("💼 Análisis Financiero - Modelo 200")
+    st.markdown(f"**Empresa:** {nombre_empresa} | **NIF:** {nif_empresa} | **Periodo analizado:** {years[0]} - {years[-1]}")
+    st.markdown("---")
 
-    hay_errores_acreedores = any(len(d['errores_acreedores']) > 0 for d in datos_empresa)
+    # --- CREACIÓN DE LAS PESTAÑAS ---
+    tab_resumen, tab_balance, tab_explotacion, tab_fondo_maniobra, tab_punto_equilibrio = st.tabs([
+        "📊 Resumen Ejecutivo", 
+        "⚖️ Balance", 
+        "📈 Explotación", 
+        "💧 Fondo de Maniobra", 
+        "⚖️ Punto de Equilibrio"
+    ])
 
-    # ==========================================================
-    # SECCIÓN DE CONTACTO ARRIBA
-    # ==========================================================
-    st.markdown("""
-        <div style="margin-bottom: 25px;">
-            <div class="contact-header-title">📞 Contactar con el solucionador</div>
-            <div class="contact-buttons-row">
-                <a href="https://wa.me/34644247796?text=Hola,%20necesito%20ayuda%20con%20el%20an%C3%A1lisis%20del%20Modelo%20200" target="_blank" rel="noopener noreferrer" class="btn-contact-wa">
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12.031 2C6.508 2 2.023 6.485 2.023 12.008c0 1.766.461 3.49 1.337 5.01L2 22l5.122-1.343c1.472.804 3.129 1.228 4.909 1.228 5.523 0 10.008-4.485 10.008-10.008C22.039 6.485 17.554 2 12.031 2zm5.86 14.162c-.246.693-1.428 1.326-1.996 1.411-.528.079-1.218.112-1.968-.126-.456-.145-1.04-.338-1.787-.661-3.141-1.356-5.193-4.521-5.35-4.73-.157-.209-1.278-1.701-1.278-3.245 0-1.544.808-2.303 1.095-2.617.287-.314.626-.392.835-.392.209 0 .417.002.599.011.192.009.45-.073.704.538.261.628.887 2.168.965 2.325.078.157.13.34.026.549-.104.209-.157.34-.313.523-.157.183-.329.409-.47.549-.157.156-.321.326-.138.64.183.314.812 1.34 1.744 2.171 1.199 1.069 2.21 1.4 2.523 1.557.313.157.496.131.678-.078.183-.209.782-.915.991-1.229.209-.314.417-.261.704-.157.287.105 1.825.861 2.138 1.018.313.157.522.235.599.366.079.131.079.758-.167 1.451z"/>
-                    </svg>
-                    <span>WhatsApp</span>
+    # ---------------------------------------------------------
+    # PESTAÑA 1: RESUMEN EJECUTIVO (La pantalla actual)
+    # ---------------------------------------------------------
+    with tab_resumen:
+        # Botones de Contacto Arriba
+        st.markdown("""
+            <div style="display: flex; gap: 15px; margin-bottom: 20px;">
+                <a href="https://wa.me/34644247796" target="_blank" style="background-color: #25D366; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                    💬 Contactar con el solucionador (WhatsApp)
                 </a>
-                <a href="https://mail.google.com/mail/?view=cm&fs=1&to=cuadrarcuentas@gmail.com&su=Consulta%20Auditor%C3%ADa%20Modelo%20200" target="_blank" rel="noopener noreferrer" class="btn-contact-gmail">
-                    <svg width="30" height="30" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14h-2V8.38l-6 3.75-6-3.75V18H4V6h1.2l6.8 4.25L18.8 6H20v12z"/>
-                    </svg>
-                    <span>Abrir en Gmail Web</span>
+                <a href="mailto:cuadrarcuentas@gmail.com" style="background-color: #3b82f6; color: white; padding: 10px 20px; border-radius: 30px; text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                    ✉️ Contactar con el solucionador (Email)
                 </a>
             </div>
-        </div>
-    """, unsafe_allow_html=True)
+        """, unsafe_allow_html=True)
 
-    st.title("💼 Informe Financiero y Riesgo")
-    st.markdown(f"**Empresa:** {nombre_empresa} | **NIF:** {nif_empresa} | **Periodo analizado:** {years_str[0]} - {years_str[-1]}")
-    st.markdown("---")
+        accionistas_1 = datos_empresa[0]['accionistas_b2']
+        accionistas_2 = datos_empresa[1]['accionistas_b2']
+        accionistas_3 = datos_empresa[2]['accionistas_b2'] if len(datos_empresa) > 2 else accionistas_2
+        b2_status_ok = (accionistas_1 == accionistas_2 == accionistas_3)
+        hay_errores_acreedores = any(len(d['errores_acreedores']) > 0 for d in datos_empresa)
 
-    st.subheader("🔍 1. Auditoría de Estructura y Desglose")
-    col_audit1, col_audit2 = st.columns(2)
+        st.subheader("🔍 1. Auditoría de Estructura y Desglose")
+        col_audit1, col_audit2 = st.columns(2)
 
-    with col_audit1:
-        st.markdown("### B.2. Participaciones (Accionistas)")
-        if b2_status_ok:
-            st.markdown('<div class="alert-success">✅ Los accionistas (B.2) se mantienen constantes.</div>', unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="alert-critical">🔴 SIRENA ROJA: Cambio de accionistas (B.2) detectado.</div>', unsafe_allow_html=True)
-        
-        with st.expander("Ver NIFs extraídos de B.2"):
-            for d in datos_empresa:
-                st.write(f"**{d['year_label']}:** {d['accionistas_b2']}")
+        with col_audit1:
+            st.markdown("### B.2. Participaciones (Accionistas)")
+            if b2_status_ok:
+                st.markdown('<div class="alert-success">✅ Los accionistas (B.2) se mantienen constantes.</div>', unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="alert-critical">🔴 SIRENA ROJA: Cambio de accionistas (B.2) detectado.</div>', unsafe_allow_html=True)
             
-    with col_audit2:
-        st.markdown("### Sirenas Rojas (Acreedores/Proveedores)")
-        
-        if hay_errores_acreedores:
-            for d in datos_empresa:
-                if d['errores_acreedores']:
-                    for error in d['errores_acreedores']:
-                        st.markdown(f'<div class="alert-critical">🔴 SIRENA ROJA ({d["year_label"]}): {error}</div>', unsafe_allow_html=True)
-            
-            st.markdown("""
-                <div class="contact-banner">
-                    <p>Los Proveedores no pueden estar a 0 y los Acreedores no pueden estar en negativo.</p>
-                    <p>Por favor, escríbanos a <a href="https://mail.google.com/mail/?view=cm&fs=1&to=cuadrarcuentas@gmail.com&su=Consulta%20Auditor%C3%ADa%20Modelo%20200" target="_blank">cuadrarcuentas@gmail.com</a> o por <a href="https://wa.me/34644247796" target="_blank">WhatsApp</a> y le explicamos las soluciones.</p>
-                </div>
-            """, unsafe_allow_html=True)
-        else:
-            st.markdown('<div class="alert-success">✅ Saldos de acreedores y proveedores coherentes.</div>', unsafe_allow_html=True)
-
-    st.markdown("---")
-    
-    # ==========================================================
-    # 2. GRÁFICAS DE BARRAS EN MILES DE EUROS (k €) Y 3 AÑOS EN X
-    # ==========================================================
-    st.subheader("📊 2. Evolución de Existencias y Acreedores")
-    
-    col_chart1, col_chart2 = st.columns(2)
-
-    with col_chart1:
-        existencias_k = [(d['existencias_00138'] or 0.0) / 1000.0 for d in datos_empresa]
-        
-        fig_exist = go.Figure()
-        fig_exist.add_trace(go.Bar(
-            x=years_str,
-            y=existencias_k,
-            name='Existencias (00138)',
-            marker_color='#1d4ed8',
-            text=[f"{val:,.1f}k €" for val in existencias_k],
-            textposition='outside',
-            hovertemplate='<b>Año %{x}</b><br>Existencias: %{y:,.2f}k €<extra></extra>'
-        ))
-        fig_exist.update_layout(
-            title=dict(text='Evolución de Existencias (00138)', font=dict(size=18, color='#1d4ed8')),
-            template='plotly_dark',
-            xaxis=dict(title="Año", type='category', categoryorder='array', categoryarray=years_str),
-            yaxis=dict(title="Importe (Miles de €)", ticksuffix="k €", rangemode="tozero"),
-            margin=dict(t=60, b=40)
-        )
-        max_exist = max(existencias_k) if existencias_k else 0
-        if max_exist > 0:
-            fig_exist.update_yaxes(range=[0, max_exist * 1.18])
-            
-        st.plotly_chart(fig_exist, use_container_width=True)
-
-    with col_chart2:
-        acreedores_k = [(d['acreedores_00239'] or 0.0) / 1000.0 for d in datos_empresa]
-        proveedores_k = [(d['proveedores_00240'] or 0.0) / 1000.0 for d in datos_empresa]
-        
-        fig_acreedores = go.Figure()
-        fig_acreedores.add_trace(go.Bar(
-            x=years_str,
-            y=acreedores_k,
-            name='Acreedores (00239)',
-            marker_color='#60a5fa',
-            text=[f"{val:,.1f}k €" for val in acreedores_k],
-            textposition='outside',
-            hovertemplate='<b>Año %{x}</b><br>Acreedores (00239): %{y:,.2f}k €<extra></extra>'
-        ))
-        fig_acreedores.add_trace(go.Bar(
-            x=years_str,
-            y=proveedores_k,
-            name='Proveedores (00240)',
-            marker_color='#3b82f6',
-            text=[f"{val:,.1f}k €" for val in proveedores_k],
-            textposition='outside',
-            hovertemplate='<b>Año %{x}</b><br>Proveedores (00240): %{y:,.2f}k €<extra></extra>'
-        ))
-        fig_acreedores.update_layout(
-            title=dict(text='Evolución de Acreedores y Proveedores', font=dict(size=18, color='#60a5fa')),
-            barmode='group',
-            template='plotly_dark',
-            xaxis=dict(title="Año", type='category', categoryorder='array', categoryarray=years_str),
-            yaxis=dict(title="Importe (Miles de €)", ticksuffix="k €", rangemode="tozero"),
-            legend_title_text='Cuenta',
-            margin=dict(t=60, b=40)
-        )
-        max_ac_pr = max(acreedores_k + proveedores_k) if (acreedores_k + proveedores_k) else 0
-        min_ac_pr = min(acreedores_k + proveedores_k) if (acreedores_k + proveedores_k) else 0
-        if max_ac_pr > 0 or min_ac_pr < 0:
-            fig_acreedores.update_yaxes(range=[min(0, min_ac_pr * 1.18), max_ac_pr * 1.18])
-
-        st.plotly_chart(fig_acreedores, use_container_width=True)
-
-    st.markdown("---")
-
-    # ==========================================================
-    # 3. ANÁLISIS DE MASAS PATRIMONIALES
-    # ==========================================================
-    st.subheader("📈 3. Análisis de Masas Patrimoniales")
-    ult_idx = -1
-
-    col1, col2, col3, col4 = st.columns(4)
-    with col1:
-        with st.container(border=True): st.metric("Ingresos", f"{datos_empresa[ult_idx]['ingresos']:,.0f} €")
-    with col2:
-        with st.container(border=True): st.metric("Resultado Neto", f"{datos_empresa[ult_idx]['resultado_neto']:,.0f} €")
-    with col3:
-        with st.container(border=True): st.metric("Activo Total", f"{datos_empresa[ult_idx]['activo_total']:,.0f} €")
-    with col4:
-        with st.container(border=True): st.metric("Patrimonio Neto", f"{datos_empresa[ult_idx]['patrimonio_neto']:,.0f} €")
-
-    col_g1, col_g2 = st.columns(2)
-    with col_g1:
-        ingresos_k = [d['ingresos'] / 1000.0 for d in datos_empresa]
-        rn_k = [d['resultado_neto'] / 1000.0 for d in datos_empresa]
-        
-        fig = go.Figure()
-        fig.add_trace(go.Bar(name='Ingresos', x=years_str, y=ingresos_k, marker_color='#3B82F6', text=[f"{v:,.1f}k €" for v in ingresos_k], textposition='outside'))
-        fig.add_trace(go.Bar(name='Resultado Neto', x=years_str, y=rn_k, marker_color='#10B981', text=[f"{v:,.1f}k €" for v in rn_k], textposition='outside'))
-        fig.update_layout(
-            title='Evolución de Ingresos y Resultados',
-            barmode='group',
-            template='plotly_dark',
-            xaxis=dict(title="Año", type='category', categoryorder='array', categoryarray=years_str),
-            yaxis=dict(title="Importe (Miles de €)", ticksuffix="k €")
-        )
-        st.plotly_chart(fig, use_container_width=True)
-        
-    with col_g2:
-        activo_k = [d['activo_total'] / 1000.0 for d in datos_empresa]
-        pn_k = [d['patrimonio_neto'] / 1000.0 for d in datos_empresa]
-        
-        fig = go.Figure()
-        fig.add_trace(go.Scatter(name='Activo Total', x=years_str, y=activo_k, mode='lines+markers', line=dict(color='#EF4444', width=3)))
-        fig.add_trace(go.Scatter(name='Patrimonio Neto', x=years_str, y=pn_k, mode='lines+markers', line=dict(color='#3B82F6', width=3)))
-        fig.update_layout(
-            title='Evolución del Balance',
-            template='plotly_dark',
-            xaxis=dict(title="Año", type='category', categoryorder='array', categoryarray=years_str),
-            yaxis=dict(title="Importe (Miles de €)", ticksuffix="k €")
-        )
-        st.plotly_chart(fig, use_container_width=True)
-
-    st.markdown("---")
-
-    st.subheader("🧠 4. Informe Ejecutivo redactado por IA")
-    if st.button("Generar Informe Ejecutivo con IA"):
-        if not api_key:
-            st.error("Introduce tu API Key en la barra lateral.")
-        else:
-            with st.spinner("Redactando informe..."):
-                summary = ""
+            with st.expander("Ver NIFs extraídos de B.2"):
                 for d in datos_empresa:
-                    summary += f"Año {d['year_label']}: Ingresos: {d['ingresos']}, RN: {d['resultado_neto']}, Acreedores(00239): {d['acreedores_00239']}, Proveedores(00240): {d['proveedores_00240']}.\n"
+                    st.write(f"**{d['year']}:** {d['accionistas_b2']}")
                 
-                rules = f"B.2 iguales: {b2_status_ok}. Errores detectados: {[e for d in datos_empresa for e in d['errores_acreedores']]}."
+        with col_audit2:
+            st.markdown("### Sirenas Rojas (Acreedores/Proveedores)")
+            if hay_errores_acreedores:
+                for d in datos_empresa:
+                    if d['errores_acreedores']:
+                        for error in d['errores_acreedores']:
+                            st.markdown(f'<div class="alert-critical">🔴 SIRENA ROJA ({d["year"]}): {error}</div>', unsafe_allow_html=True)
                 
-                ai_text = generate_ai_report(api_key, summary, rules)
-                st.markdown(f'<div class="ai-report">{ai_text}</div>', unsafe_allow_html=True)
+                st.markdown("""
+                    <div class="contact-banner">
+                        <p>Los Proveedores no pueden estar a 0 y los Acreedores no pueden estar en negativo.</p>
+                        <p>Por favor, <a href="mailto:cuadrarcuentas@gmail.com">contáctenos urgentemente</a> y le explicamos las soluciones.</p>
+                    </div>
+                """, unsafe_allow_html=True)
+            else:
+                st.markdown('<div class="alert-success">✅ Saldos de acreedores y proveedores coherentes.</div>', unsafe_allow_html=True)
 
+        st.markdown("---")
+        
+        st.subheader("📊 2. Evolución de Existencias y Acreedores")
+        col_chart1, col_chart2 = st.columns(2)
+        
+        years_str = [str(y) for y in years]
+        existencias_data = [d['existencias_00138'] if d['existencias_00138'] is not None else 0 for d in datos_empresa]
+        acreedores_data = [d['acreedores_00239'] if d['acreedores_00239'] is not None else 0 for d in datos_empresa]
+        proveedores_data = [d['proveedores_00240'] if d['proveedores_00240'] is not None else 0 for d in datos_empresa]
+
+        with col_chart1:
+            fig_exist = go.Figure()
+            fig_exist.add_trace(go.Bar(
+                x=years_str, y=existencias_data, marker_color='#1d4ed8',
+                text=[f"{v/1000:.1f}k" if v >= 1000 else f"{v:.0f}" for v in existencias_data], 
+                textposition='outside'
+            ))
+            fig_exist.update_layout(
+                title='Evolución de Existencias (00138)', xaxis_title='Año', yaxis_title='Euros (k)',
+                template='plotly_dark', yaxis=dict(tickformat='.2s') 
+            )
+            st.plotly_chart(fig_exist, use_container_width=True)
+
+        with col_chart2:
+            fig_acreedores = go.Figure()
+            fig_acreedores.add_trace(go.Bar(
+                x=years_str, y=acreedores_data, name='Acreedores (00239)', marker_color='#60a5fa',
+                text=[f"{v/1000:.1f}k" if v >= 1000 else f"{v:.0f}" for v in acreedores_data], textposition='outside'
+            ))
+            fig_acreedores.add_trace(go.Bar(
+                x=years_str, y=proveedores_data, name='Proveedores (00240)', marker_color='#3b82f6',
+                text=[f"{v/1000:.1f}k" if v >= 1000 else f"{v:.0f}" for v in proveedores_data], textposition='outside'
+            ))
+            fig_acreedores.update_layout(
+                title='Evolución de Acreedores y Proveedores', xaxis_title='Año', yaxis_title='Euros (k)',
+                barmode='group', template='plotly_dark', yaxis=dict(tickformat='.2s')
+            )
+            st.plotly_chart(fig_acreedores, use_container_width=True)
+
+        st.markdown("---")
+        st.subheader("📈 3. Análisis de Masas Patrimoniales")
+        ult_idx = -1
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            with st.container(border=True): st.metric("Ingresos", f"{datos_empresa[ult_idx]['ingresos']:,.0f} €")
+        with col2:
+            with st.container(border=True): st.metric("Resultado Neto", f"{datos_empresa[ult_idx]['resultado_neto']:,.0f} €")
+        with col3:
+            with st.container(border=True): st.metric("Activo Total", f"{datos_empresa[ult_idx]['activo_total']:,.0f} €")
+        with col4:
+            with st.container(border=True): st.metric("Patrimonio Neto", f"{datos_empresa[ult_idx]['patrimonio_neto']:,.0f} €")
+
+        col_g1, col_g2 = st.columns(2)
+        with col_g1:
+            fig = go.Figure()
+            fig.add_trace(go.Bar(name='Ingresos', x=years_str, y=[d['ingresos'] for d in datos_empresa], marker_color='#3B82F6'))
+            fig.add_trace(go.Bar(name='Resultado Neto', x=years_str, y=[d['resultado_neto'] for d in datos_empresa], marker_color='#10B981'))
+            fig.update_layout(title='Evolución de Ingresos y Resultados', barmode='group', template='plotly_dark', xaxis_title="Año", yaxis_title="Euros")
+            st.plotly_chart(fig, use_container_width=True)
+            
+        with col_g2:
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(name='Activo Total', x=years_str, y=[d['activo_total'] for d in datos_empresa], mode='lines+markers', line=dict(color='#EF4444', width=3)))
+            fig.add_trace(go.Scatter(name='Patrimonio Neto', x=years_str, y=[d['patrimonio_neto'] for d in datos_empresa], mode='lines+markers', line=dict(color='#3B82F6', width=3)))
+            fig.update_layout(title='Evolución del Balance', template='plotly_dark', xaxis_title="Año", yaxis_title="Euros")
+            st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("---")
+        st.subheader("🧠 4. Informe Ejecutivo redactado por IA")
+        if st.button("Generar Informe Ejecutivo con IA"):
+            if not api_key:
+                st.error("Introduce tu API Key en la barra lateral.")
+            else:
+                with st.spinner("Redactando informe..."):
+                    summary = ""
+                    for d in datos_empresa:
+                        summary += f"Año {d['year']}: Ingresos: {d['ingresos']}, RN: {d['resultado_neto']}, Acreedores(00239): {d['acreedores_00239']}, Proveedores(00240): {d['proveedores_00240']}.\n"
+                    rules = f"B.2 iguales: {b2_status_ok}. Errores detectados: {[e for d in datos_empresa for e in d['errores_acreedores']]}."
+                    ai_text = generate_ai_report(api_key, summary, rules)
+                    st.markdown(f'<div class="ai-report">{ai_text}</div>', unsafe_allow_html=True)
+
+    # ---------------------------------------------------------
+    # PESTAÑA 2: BALANCE (SOLAPA EXCEL)
+    # ---------------------------------------------------------
+    with tab_balance:
+        st.subheader("⚖️ Balance de Situación Comparado")
+        
+        # Construimos el DataFrame para Balance
+        df_balance = pd.DataFrame({
+            'Concepto': [
+                'Inmovilizado Material', 'Inversiones Inmobiliarias', 'Inv. Financieras L.P.', 'Activos Imp. Diferido',
+                'Existencias', 'Clientes', 'Inv. Financieras C.P.', 'Deudores Varios', 'Tesorería', 'Periodificaciones C.P.',
+                'TOTAL ACTIVO',
+                'Capital', 'Reservas', 'Resultado del Ejercicio', 'Subvenciones',
+                'Deuda a Largo Plazo',
+                'Acreedores Comerciales', 'Deudas Fiscales y Sociales', 'Otras Deudas C.P.', 'Deuda Bancaria C.P.',
+                'TOTAL PASIVO'
+            ],
+            'Tipo': [
+                'Activo', 'Activo', 'Activo', 'Activo',
+                'Activo', 'Activo', 'Activo', 'Activo', 'Activo', 'Activo',
+                'TOTAL',
+                'Pasivo', 'Pasivo', 'Pasivo', 'Pasivo',
+                'Pasivo',
+                'Pasivo', 'Pasivo', 'Pasivo', 'Pasivo',
+                'TOTAL'
+            ]
+        })
+
+        for i, y in enumerate(years):
+            d = datos_empresa[i]
+            df_balance[str(y)] = [
+                d['inmovilizado_material'], d['inversiones_inmobiliarias'], d['inv_fin_largo_plazo'], d['activos_imp_diferido'],
+                d['existencias_comerciales'], d['clientes'], d['inv_fin_corto_plazo'], d['deudores_varios'], d['tesoreria'], d['periodificaciones_cp'],
+                d['activo_total'],
+                d['capital'], d['reservas'], d['resultado_neto'], d['subvenciones'],
+                d['deuda_lp'],
+                d['acreedores_comerciales'], d['deudas_fiscales'], d['otras_deudas_cp'], d['deuda_bancaria_cp'],
+                d['patrimonio_neto'] + d['pasivo_no_corriente'] + d['pasivo_corriente']
+            ]
+
+        # Formateamos los números
+        for col in df_balance.columns[2:]:
+            df_balance[col] = df_balance[col].apply(lambda x: f"{x:,.2f} €")
+
+        st.dataframe(df_balance, hide_index=True, use_container_width=True)
+
+    # ---------------------------------------------------------
+    # PESTAÑA 3: EXPLOTACIÓN (SOLAPA EXCEL)
+    # ---------------------------------------------------------
+    with tab_explotacion:
+        st.subheader("📈 Cuenta de Explotación Comparada")
+        
+        df_explotacion = pd.DataFrame({
+            'Concepto': [
+                'Cifra de Negocio (Ventas)', 'Aprovisionamientos', 
+                'MARGEN BRUTO',
+                'Gastos de Personal', 'Otros Gastos de Explotación', 'Amortizaciones', 'Tributos',
+                'RESULTADO DE EXPLOTACIÓN',
+                'Gastos Financieros',
+                'RESULTADO FINANCIERO',
+                'RESULTADO NETO'
+            ]
+        })
+
+        for i, y in enumerate(years):
+            d = datos_empresa[i]
+            margen_bruto = d['ingresos'] - d['aprovisionamientos']
+            df_explotacion[str(y)] = [
+                d['ingresos'], d['aprovisionamientos'],
+                margen_bruto,
+                d['gastos_personal'], d['otros_gastos_explot'], d['amortizacion'], d['tributos'],
+                d['resultado_explotacion'],
+                d['gastos_financieros'],
+                d['resultado_financiero'],
+                d['resultado_neto']
+            ]
+
+        for col in df_explotacion.columns[1:]:
+            df_explotacion[col] = df_explotacion[col].apply(lambda x: f"{x:,.2f} €")
+
+        st.dataframe(df_explotacion, hide_index=True, use_container_width=True)
+
+    # ---------------------------------------------------------
+    # PESTAÑA 4: FONDO DE MANIOBRA (SOLAPA EXCEL)
+    # ---------------------------------------------------------
+    with tab_fondo_maniobra:
+        st.subheader("💧 Fondo de Maniobra")
+        
+        df_fm = pd.DataFrame({
+            'Concepto': [
+                '+ Activo Circulante',
+                '- Pasivo Circulante',
+                'FONDO DE MANIOBRA APARENTE',
+                'FONDO DE MANIOBRA NECESARIO',
+                'Días de Autonomía'
+            ]
+        })
+
+        for i, y in enumerate(years):
+            d = datos_empresa[i]
+            ac = d['existencias_comerciales'] + d['clientes'] + d['tesoreria'] + d['inv_fin_corto_plazo'] + d['deudores_varios']
+            pc = d['pasivo_corriente']
+            fm_aparente = ac - pc
+            
+            # Aproximación al Fondo de Maniobra Necesario (Gastos diarios * Periodo de maduración) - Financiación proveedores
+            # Usaremos una aproximación estándar para que la tabla no esté vacía
+            gastos_diarios = (d['ingresos'] - margen_bruto) / 365
+            periodo_maduracion = 60 # Días estimados
+            financiacion_prov = d['proveedores_00240'] if d['proveedores_00240'] else 0
+            fm_necesario = (gastos_diarios * periodo_maduracion) - financiacion_prov
+            
+            dias_autonomia = fm_aparente / gastos_diarios if gastos_diarios > 0 else 0
+
+            df_fm[str(y)] = [
+                ac, pc, fm_aparente, fm_necesario, f"{dias_autonomia:.1f} días"
+            ]
+
+        # Formateo selectivo
+        for col in df_fm.columns[1:]:
+            df_fm[col] = df_fm[col].apply(lambda x: f"{x:,.2f} €" if isinstance(x, (int, float)) else x)
+
+        st.dataframe(df_fm, hide_index=True, use_container_width=True)
+
+    # ---------------------------------------------------------
+    # PESTAÑA 5: PUNTO DE EQUILIBRIO
+    # ---------------------------------------------------------
+    with tab_punto_equilibrio:
+        st.subheader("⚖️ Punto de Equilibrio (Umbral de Rentabilidad)")
+        
+        col_pe1, col_pe2 = st.columns(2)
+        
+        with col_pe1:
+            df_pe = pd.DataFrame({
+                'Concepto': [
+                    'Gastos Fijos Anuales',
+                    'Gastos Variables Anuales',
+                    '% Gastos Variables s/ Ventas',
+                    'Facturación Anual Necesaria',
+                    'Facturación Alcanzada',
+                    'Diferencia (Margen de Seguridad)'
+                ]
+            })
+            for i, y in enumerate(years):
+                d = datos_empresa[i]
+                gastos_fijos = d['gastos_personal'] + d['amortizacion'] + d['otros_gastos_explot']
+                gastos_variables = d['aprovisionamientos']
+                pct_var = gastos_variables / d['ingresos'] if d['ingresos'] > 0 else 0
+                
+                facturacion_necesaria = gastos_fijos / (1 - pct_var) if pct_var < 1 else 0
+                diferencia = d['ingresos'] - facturacion_necesaria
+
+                df_pe[str(y)] = [
+                    gastos_fijos, gastos_variables, f"{pct_var*100:.1f}%", 
+                    facturacion_necesaria, d['ingresos'], diferencia
+                ]
+            
+            for col in df_pe.columns[1:]:
+                df_pe[col] = df_pe[col].apply(lambda x: f"{x:,.2f} €" if isinstance(x, (int, float)) else x)
+                
+            st.dataframe(df_pe, hide_index=True, use_container_width=True)
+
+        with col_pe2:
+            # Gráfico visual del Punto de Equilibrio del último año
+            ult_idx = -1
+            d = datos_empresa[ult_idx]
+            gastos_fijos = d['gastos_personal'] + d['amortizacion'] + d['otros_gastos_explot']
+            gastos_variables = d['aprovisionamientos']
+            pct_var = gastos_variables / d['ingresos'] if d['ingresos'] > 0 else 0
+            facturacion_necesaria = gastos_fijos / (1 - pct_var) if pct_var < 1 else 0
+            
+            x_vals = [0, d['ingresos'] * 1.2]
+            y_ventas = x_vals
+            y_costes = [gastos_fijos + (x * pct_var) for x in x_vals]
+            
+            fig_pe = go.Figure()
+            fig_pe.add_trace(go.Scatter(x=x_vals, y=y_ventas, mode='lines', name='Ventas', line=dict(color='#3B82F6', width=3)))
+            fig_pe.add_trace(go.Scatter(x=x_vals, y=y_costes, mode='lines', name='Costes Totales', line=dict(color='#EF4444', width=3)))
+            fig_pe.add_hline(y=gastos_fijos, line_dash="dash", line_color="#F59E0B", annotation_text="Gastos Fijos")
+            
+            # Punto de corte
+            fig_pe.add_trace(go.Scatter(x=[facturacion_necesaria], y=[facturacion_necesaria], mode='markers', name='Punto de Equilibrio', marker=dict(color='#10B981', size=12)))
+            
+            fig_pe.update_layout(
+                title=f'Gráfico Punto de Equilibrio {years[ult_idx]}',
+                xaxis_title='Facturación (€)',
+                yaxis_title='Euros (€)',
+                template='plotly_dark',
+                legend=dict(orientation='h', yanchor='bottom', y=1.02)
+            )
+            st.plotly_chart(fig_pe, use_container_width=True)
+
+    # Footer final
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #6B7280; font-size: 12px;'>

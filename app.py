@@ -5,20 +5,19 @@ import pdfplumber
 import re
 import time
 import openai
-import textwrap
 
 # ============================================
-# 1. CONFIGURACIÓN DE PÁGINA CENTRADA
+# 1. CONFIGURACIÓN DE PÁGINA
 # ============================================
 st.set_page_config(
     page_title="Auditoría Financiera Senior | Modelo 200",
     page_icon="💼",
-    layout="centered", 
+    layout="wide", 
     initial_sidebar_state="expanded"
 )
 
 # ============================================
-# 2. CSS MEJORADO Y ANIMACIONES
+# 2. CSS MEJORADO, ANIMACIONES Y MODAL CENTRAL
 # ============================================
 st.markdown("""
 <style>
@@ -33,7 +32,7 @@ st.markdown("""
     .alert-success { background-color: #10B981; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
     
     /* Banner de Contacto Urgente */
-    .contact-banner { background-color: #FEF2F2; border: 2px solid #EF4444; color: #991B1B !important; padding: 15px; border-radius: 8px; margin-bottom: 20px; font-weight: bold; text-align: center; }
+    .contact-banner { background-color: #FEF2F2; border: 2px solid #EF4444; color: #991B1B !important; padding: 15px; border-radius: 8px; margin-top: 15px; margin-bottom: 20px; font-weight: bold; text-align: center; }
     .contact-banner a { color: #EF4444; text-decoration: underline; }
 
     /* KPIs */
@@ -44,15 +43,32 @@ st.markdown("""
         border-radius: 10px; 
     }
 
-    /* Flecha de inicio */
-    @keyframes pulse-arrow {
-        0% { transform: translateX(0); opacity: 1; }
-        50% { transform: translateX(-20px); opacity: 0.5; }
-        100% { transform: translateX(0); opacity: 1; }
+    /* --- ESTILOS DEL MODAL DE CARGA (LOADER) --- */
+    .loader-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background-color: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        display: flex; justify-content: center; align-items: center;
+        z-index: 9999;
     }
-    .start-arrow { font-size: 80px; color: #3B82F6; animation: pulse-arrow 1.5s infinite; display: inline-block; }
+    
+    .loader-card {
+        background-color: #262730;
+        padding: 40px 60px;
+        border-radius: 20px;
+        border-left: 8px solid #3B82F6;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        display: flex; flex-direction: column; align-items: center;
+        width: 800px; max-width: 90vw;
+    }
 
-    /* Martillo y Libro */
+    .loader-icon-container {
+        position: relative;
+        width: 120px; height: 100px;
+        margin-bottom: 30px;
+    }
+
     @keyframes smash {
         0% { transform: rotate(0deg); }
         30% { transform: rotate(-45deg); }
@@ -60,16 +76,57 @@ st.markdown("""
         70% { transform: rotate(-10deg); }
         100% { transform: rotate(0deg); }
     }
-    .animated-hammer { display: inline-block; animation: smash 0.6s infinite; transform-origin: bottom right; }
-    
-    /* Barra de progreso verde */
-    .progress-container { flex-grow: 1; margin-left: 20px; height: 16px; background-color: #333333; border-radius: 8px; overflow: hidden; display: flex; align-items: center; }
-    .progress-bar-animated { height: 100%; width: 100%; background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 10px, #2E7D32 10px, #2E7D32 20px); background-size: 28.28px 28.28px; animation: move-stripes 1s linear infinite; }
-    @keyframes move-stripes { 0% { background-position: 0 0; } 100% { background-position: 28.28px 0; } }
+    .animated-hammer {
+        font-size: 70px;
+        position: absolute;
+        top: -30px; left: 30px;
+        z-index: 2;
+        display: inline-block;
+        animation: smash 0.8s infinite;
+        transform-origin: bottom right;
+    }
+
+    .css-book {
+        width: 80px; height: 60px;
+        background: linear-gradient(135deg, #3B82F6, #1E3A8A);
+        color: white;
+        font-family: sans-serif; font-size: 16px; font-weight: 900;
+        display: flex; justify-content: center; align-items: center;
+        border-radius: 4px 10px 10px 4px;
+        box-shadow: 4px 4px 10px rgba(0,0,0,0.6);
+        border-left: 10px solid #1E3A8A;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        position: absolute;
+        bottom: 0px; left: 0px;
+        z-index: 1;
+        text-align: center; line-height: 1.1;
+    }
+
+    .loader-title { color: #FAFAFA; font-size: 28px; font-weight: bold; margin-bottom: 10px; }
+    .loader-subtitle { color: #A0A0A0; font-size: 18px; margin-bottom: 30px; }
+
+    .progress-container {
+        width: 100%; height: 30px;
+        background-color: #333333;
+        border-radius: 15px;
+        overflow: hidden;
+        display: flex; align-items: center;
+        box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .progress-bar-animated {
+        height: 100%; width: 100%;
+        background: repeating-linear-gradient(-45deg, #4CAF50, #4CAF50 20px, #2E7D32 20px, #2E7D32 40px);
+        background-size: 56.56px 56.56px;
+        animation: move-stripes 1s linear infinite;
+    }
+    @keyframes move-stripes {
+        0% { background-position: 0 0; }
+        100% { background-position: 56.56px 0; }
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Diccionario de nombres de cuentas para los mensajes de error
+# Diccionario de nombres de cuentas
 NOMBRES_CUENTAS = {
     '00239': 'Acreedores comerciales y otras cuentas a pagar',
     '00240': 'Proveedores',
@@ -85,7 +142,7 @@ NOMBRES_CUENTAS = {
 }
 
 # ============================================
-# 3. FUNCIONES DE EXTRACCIÓN DE PDF (CORREGIDAS)
+# 3. FUNCIONES DE EXTRACCIÓN DE PDF
 # ============================================
 def parse_spanish_number(num_str):
     if not num_str: return None
@@ -111,15 +168,12 @@ def extract_data_from_pdf(pdf_file):
         'errores_acreedores': [] 
     }
 
-    # Extraer Año
     year_match = re.search(r'Ejercicio\s*(\d{4})', text) or re.search(r'(20\d{2})', text)
     if year_match: data['year'] = int(year_match.group(1))
 
-    # Extraer NIF (Mejorado para capturar "NIF Presentador: B..." o "NIF B...")
     nif_match = re.search(r'(?:NIF Presentador:|NIF)\s*([A-Z0-9]\d{7}[A-Z0-9])', text)
     if nif_match: data['nif'] = nif_match.group(1)
 
-    # Función auxiliar robusta
     def get_val(casilla):
         pattern = rf"{casilla}.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
         match = re.search(pattern, text)
@@ -127,7 +181,6 @@ def extract_data_from_pdf(pdf_file):
             return parse_spanish_number(match.group(1))
         return None 
 
-    # Extraer datos estándar
     data['ingresos'] = get_val('00255') or 0.0
     data['aprovisionamientos'] = abs(get_val('00260') or 0.0)
     data['gastos_personal'] = abs(get_val('00270') or 0.0)
@@ -143,7 +196,6 @@ def extract_data_from_pdf(pdf_file):
     data['deuda_bancaria'] = get_val('00218') or 0.0
     data['base_imponible'] = get_val('00552') or 0.0
     
-    # --- REVISIÓN EXHAUSTIVA DE ACREEDORES Y PROVEEDORES (00239-00249) ---
     data['existencias_00138'] = get_val('00138')
     data['acreedores_00239'] = get_val('00239')
     data['proveedores_00240'] = get_val('00240')
@@ -155,11 +207,9 @@ def extract_data_from_pdf(pdf_file):
         if val is not None and val < 0:
             data['errores_acreedores'].append(f"La cuenta **{nombre_cuenta} ({code})** está en NEGATIVO ({val:,.2f} €).")
         
-        # Validación especial para Proveedores (00240)
         if code == '00240' and (val is None or val == 0):
             data['errores_acreedores'].append(f"La cuenta **{nombre_cuenta} ({code})** está VACÍA o a CERO.")
             
-    # Extraer Accionistas (B.2)
     b2_match = re.search(r'B\.2\.\s+Participaciones de personas.*?(?=C\.|D\.|$)', text, re.DOTALL | re.IGNORECASE)
     if b2_match:
         b2_text = b2_match.group(0)
@@ -174,10 +224,7 @@ def extract_data_from_pdf(pdf_file):
 # ============================================
 def generate_ai_report(api_key, financial_summary, rules_audit):
     client = openai.OpenAI(api_key=api_key)
-    system_prompt = """
-    Eres un Analista Financiero Senior con 22 años de experiencia. Tono formal, técnico y directo.
-    Aplica estas reglas estrictamente.
-    """
+    system_prompt = "Eres un Analista Financiero Senior con 22 años de experiencia. Tono formal, técnico y directo."
     user_prompt = f"Datos:\n{financial_summary}\n\nReglas/Auditoría:\n{rules_audit}"
     try:
         response = client.chat.completions.create(
@@ -193,28 +240,42 @@ def generate_ai_report(api_key, financial_summary, rules_audit):
 # 5. INTERFAZ SIDEBAR
 # ============================================
 st.sidebar.title("💼 Auditoría Senior")
-st.sidebar.markdown("Sube los Modelos 200 (mínimo 2 años) para el análisis comparativo.")
+st.sidebar.markdown("Sube los Modelos 200 (mínimo 2 años).")
 uploaded_files = st.sidebar.file_uploader("Selecciona PDFs", type="pdf", accept_multiple_files=True)
 
 st.sidebar.markdown("---")
 st.sidebar.subheader("🤖 IA Privada")
 st.sidebar.markdown("Introduce tu API Key. *No se almacena.*")
-api_key = st.sidebar.text_input("API Key (OpenAI, Groq...)", type="password")
+api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 
 datos_empresa = []
 
 # ============================================
-# 6. PROCESAMIENTO CON ANIMACIÓN
+# 6. PROCESAMIENTO CON EL LOADER CENTRAL
 # ============================================
 if uploaded_files:
     for file in uploaded_files:
         loader_placeholder = st.empty()
         
-        loader_html = f'<div style="display: flex; align-items: center; background-color: #262730; padding: 15px 20px; border-radius: 10px; border-left: 5px solid #3B82F6; width: 100%; box-sizing: border-box;"><div style="position: relative; width: 60px; height: 50px; margin-right: 20px; flex-shrink: 0;"><span class="animated-hammer" style="font-size: 35px; position: absolute; top: -10px; left: 15px; z-index: 2;">🔨</span><div style="position: absolute; bottom: 0px; left: 0px; z-index: 1; width: 45px; height: 32px; background: linear-gradient(135deg, #3B82F6, #1E3A8A); color: white; font-family: sans-serif; font-size: 10px; font-weight: 900; display: flex; justify-content: center; align-items: center; border-radius: 2px 6px 6px 2px; box-shadow: 2px 2px 5px rgba(0,0,0,0.5); border-left: 6px solid #1E3A8A; text-shadow: 1px 1px 1px rgba(0,0,0,0.5);">MOD.<br>200</div></div><div style="flex-shrink: 0; margin-right: 20px;"><div style="color: #FAFAFA; font-size: 16px; font-weight: bold;">Auditando documento...</div><div style="color: #A0A0A0; font-size: 13px;">{file.name}</div></div><div class="progress-container"><div class="progress-bar-animated"></div></div></div>'
+        loader_html = f"""
+        <div class="loader-overlay">
+            <div class="loader-card">
+                <div class="loader-icon-container">
+                    <span class="animated-hammer">🔨</span>
+                    <div class="css-book">MOD.<br>200</div>
+                </div>
+                <div class="loader-title">Auditando documento...</div>
+                <div class="loader-subtitle">{file.name}</div>
+                <div class="progress-container">
+                    <div class="progress-bar-animated"></div>
+                </div>
+            </div>
+        </div>
+        """
         
         with loader_placeholder:
             st.markdown(loader_html, unsafe_allow_html=True)
-            time.sleep(1.5) 
+            time.sleep(2) 
             
         try:
             extracted = extract_data_from_pdf(file)
@@ -231,32 +292,25 @@ else:
     st.sidebar.info("Esperando archivos PDF...")
 
 # ============================================
-# 7. VALIDACIÓN CRÍTICA: MISMA EMPRESA (NIF)
+# 7. VALIDACIÓN DE MISMA EMPRESA
 # ============================================
 if datos_empresa:
     nifs = set([d['nif'] for d in datos_empresa])
-    # Filtramos 'Desconocido' para evitar bloqueos si falla la extracción en algún año
     nifs_validos = {n for n in nifs if n != 'Desconocido'} 
     if len(nifs_validos) > 1:
-        st.error(f"🚨 **ALERTA CRÍTICA:** Los archivos subidos son de diferentes empresas. NIFs: {nifs_validos}. Sube modelos de la misma sociedad.")
+        st.error(f"🚨 **ALERTA CRÍTICA:** Los archivos subidos son de diferentes empresas. NIFs: {nifs_validos}.")
         st.stop()
 
 # ============================================
-# 8. PANTALLA DE INICIO
+# 8. PANTALLA DE INICIO (AHORA VACÍA - MODELO NUEVO)
 # ============================================
 if not datos_empresa or len(datos_empresa) < 2:
-    st.markdown("""
-        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center;">
-            <h1 style="color: #3B82F6; font-size: 3rem;">Sistema de Auditoría Senior</h1>
-            <p style="font-size: 1.2rem; color: gray; margin-bottom: 30px;">Sube al menos 2 Modelos 200 de la misma empresa en el panel lateral.</p>
-            <div class="start-arrow">⬅️</div>
-            <p style="font-size: 1rem; color: #A0A0A0; margin-top: 20px;">Haz clic en "Browse files" en la barra de la izquierda</p>
-        </div>
-    """, unsafe_allow_html=True)
+    # Se ha eliminado el bloque HTML de bienvenida.
+    # La pantalla se quedará en blanco (negra) esperando que se suban los archivos.
     st.stop()
 
 # ============================================
-# 9. RENDERIZADO PRINCIPAL
+# 9. RENDERIZADO PRINCIPAL (DASHBOARD)
 # ============================================
 nif_empresa = datos_empresa[0]['nif']
 years = [d['year'] for d in datos_empresa]
@@ -266,7 +320,6 @@ accionistas_2 = datos_empresa[1]['accionistas_b2']
 accionistas_3 = datos_empresa[2]['accionistas_b2'] if len(datos_empresa) > 2 else accionistas_2
 b2_status_ok = (accionistas_1 == accionistas_2 == accionistas_3)
 
-# Comprobar si hay errores en las cuentas de acreedores
 hay_errores_acreedores = any(len(d['errores_acreedores']) > 0 for d in datos_empresa)
 
 st.title("💼 Informe de Auditoría Financiera y Riesgo")
@@ -290,14 +343,12 @@ with col_audit1:
 with col_audit2:
     st.markdown("### Desglose de Existencias y Acreedores")
     
-    # MOSTRAR ALARMAS EXHAUSTIVAS CON EL TEXTO SOLICITADO
     if hay_errores_acreedores:
         for d in datos_empresa:
             if d['errores_acreedores']:
                 for error in d['errores_acreedores']:
                     st.markdown(f'<div class="alert-critical">🔴 SIRENA ROJA ({d["year"]}): {error}</div>', unsafe_allow_html=True)
         
-        # Banner de contacto urgente solicitado por el usuario
         st.markdown("""
             <div class="contact-banner">
                 <p>Los Proveedores no pueden estar a 0 y los Acreedores no pueden estar en negativo.</p>

@@ -12,7 +12,7 @@ import openai
 st.set_page_config(
     page_title="Auditoría Financiera Senior | Modelo 200",
     page_icon="💼",
-    layout="wide", # Mantenemos WIDE para que el dashboard ocupe toda la pantalla
+    layout="wide", 
     initial_sidebar_state="expanded"
 )
 
@@ -166,7 +166,8 @@ def extract_data_from_pdf(pdf_file):
             if extracted: text += extracted + "\n"
     
     data = {
-        'year': 0, 'nif': 'Desconocido', 'ingresos': 0.0, 'aprovisionamientos': 0.0, 
+        'year': 0, 'nif': 'Desconocido', 'empresa': 'Desconocida', 
+        'ingresos': 0.0, 'aprovisionamientos': 0.0, 
         'gastos_personal': 0.0, 'amortizacion': 0.0, 'resultado_explotacion': 0.0, 
         'resultado_neto': 0.0, 'activo_total': 0.0, 'patrimonio_neto': 0.0, 
         'pasivo_no_corriente': 0.0, 'pasivo_corriente': 0.0, 'clientes': 0.0, 
@@ -176,12 +177,37 @@ def extract_data_from_pdf(pdf_file):
         'errores_acreedores': [] 
     }
 
+    # Extraer Año
     year_match = re.search(r'Ejercicio\s*(\d{4})', text) or re.search(r'(20\d{2})', text)
     if year_match: data['year'] = int(year_match.group(1))
 
-    nif_match = re.search(r'(?:NIF Presentador:|NIF)\s*([A-Z0-9]\d{7}[A-Z0-9])', text)
-    if nif_match: data['nif'] = nif_match.group(1)
+    # --- CORRECCIÓN DE NIF Y EMPRESA (EVITANDO EL PRESENTADOR) ---
+    # 1. Buscamos el bloque de "Identificación" y extraemos el NIF que viene después
+    nif_titular_match = re.search(r'Identificaci[oó]n.*?NIF[\s\n]*([A-Z0-9]\d{7}[A-Z0-9])', text, re.DOTALL | re.IGNORECASE)
+    if nif_titular_match:
+        data['nif'] = nif_titular_match.group(1)
+    else:
+        # Fallback: buscar el NIF que NO sea el del presentador
+        nif_match = re.search(r'NIF(?!\s*Presentador)[\s\n]*([A-Z0-9]\d{7}[A-Z0-9])', text, re.IGNORECASE)
+        if nif_match: data['nif'] = nif_match.group(1)
 
+    # 2. Buscamos el nombre en la sección de Identificación
+    empresa_titular_match = re.search(r'Identificaci[oó]n.*?(?:Apellidos y nombre o razón social|Apellidos y Nombre / Razón social)[\s\n]*([A-Z0-9\s\.\,\-]+)', text, re.DOTALL | re.IGNORECASE)
+    if empresa_titular_match:
+        nombre = empresa_titular_match.group(1).strip()
+        nombre = re.sub(r'\s+', ' ', nombre) # Limpiar saltos de línea
+        nombre = re.sub(r'[^A-Z0-9\s\.\,\-]', '', nombre).strip()
+        data['empresa'] = nombre
+    else:
+        # Fallback
+        empresa_match = re.search(r'Apellidos y nombre o razón social[\s\n]*([A-Z0-9\s\.\,\-]+)', text, re.IGNORECASE)
+        if empresa_match:
+            nombre = empresa_match.group(1).strip()
+            nombre = re.sub(r'\s+', ' ', nombre)
+            nombre = re.sub(r'[^A-Z0-9\s\.\,\-]', '', nombre).strip()
+            data['empresa'] = nombre
+
+    # --- EXTRACCIÓN DE DATOS NUMÉRICOS ---
     def get_val(casilla):
         pattern = rf"{casilla}.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
         match = re.search(pattern, text)
@@ -313,7 +339,6 @@ if datos_empresa:
 # 8. PANTALLA DE INICIO (CENTRADA CON FLEXBOX)
 # ============================================
 if not datos_empresa or len(datos_empresa) < 2:
-    # Usamos flexbox con height: 80vh para centrar vertical y horizontalmente
     st.markdown("""
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center;">
             <h1 style="color: #3B82F6; font-size: 3.5rem; margin-bottom: 20px;">Sistema de Auditoría Senior</h1>
@@ -327,6 +352,7 @@ if not datos_empresa or len(datos_empresa) < 2:
 # ============================================
 # 9. RENDERIZADO PRINCIPAL (DASHBOARD)
 # ============================================
+nombre_empresa = datos_empresa[0]['empresa']
 nif_empresa = datos_empresa[0]['nif']
 years = [d['year'] for d in datos_empresa]
 
@@ -338,7 +364,8 @@ b2_status_ok = (accionistas_1 == accionistas_2 == accionistas_3)
 hay_errores_acreedores = any(len(d['errores_acreedores']) > 0 for d in datos_empresa)
 
 st.title("💼 Informe de Auditoría Financiera y Riesgo")
-st.markdown(f"**Empresa (NIF):** {nif_empresa} | **Periodo:** {years[0]} - {years[-1]}")
+# ENCABEZADO CON NOMBRE, NIF Y PERIODO DINÁMICO
+st.markdown(f"**Empresa:** {nombre_empresa} (NIF: {nif_empresa}) | **Periodo analizado:** {years[0]} - {years[-1]}")
 st.markdown("---")
 
 st.subheader("🔍 1. Auditoría de Estructura y Desglose")
@@ -373,16 +400,24 @@ with col_audit2:
     else:
         st.markdown('<div class="alert-success">✅ Saldos de acreedores coherentes.</div>', unsafe_allow_html=True)
 
-    st.markdown("**Evolución de Existencias (00138):**")
+    # --- BLOQUE EXISTENCIAS CON FONDO AZUL OSCURO ---
+    existencias_html = "<div style='background-color: #1d4ed8; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;'>"
+    existencias_html += "<h4 style='margin-top:0; color: white;'>Evolución de Existencias (00138):</h4>"
     for d in datos_empresa:
         val = f"{d['existencias_00138']:,.2f} €" if d['existencias_00138'] is not None else "Vacío"
-        st.markdown(f"**{d['year']}:** {val}", unsafe_allow_html=True)
-    
-    st.markdown("**Evolución de Acreedores (00239-00249):**")
+        existencias_html += f"<p style='margin: 5px 0;'><b>{d['year']}:</b> {val}</p>"
+    existencias_html += "</div>"
+    st.markdown(existencias_html, unsafe_allow_html=True)
+
+    # --- BLOQUE ACREEDORES CON FONDO AZUL CLARO ---
+    acreedores_html = "<div style='background-color: #60a5fa; color: white; padding: 15px; border-radius: 8px; margin-bottom: 15px;'>"
+    acreedores_html += "<h4 style='margin-top:0; color: white;'>Evolución de Acreedores (00239-00249):</h4>"
     for d in datos_empresa:
         val239 = f"{d['acreedores_00239']:,.2f} €" if d['acreedores_00239'] is not None else "Vacío"
         val240 = f"{d['proveedores_00240']:,.2f} €" if d['proveedores_00240'] is not None else "Vacío"
-        st.caption(f"**{d['year']}:** Cta 00239: {val239} | Cta 00240: {val240}")
+        acreedores_html += f"<p style='margin: 5px 0;'><b>{d['year']}:</b> Cta 00239: {val239} | Cta 00240: {val240}</p>"
+    acreedores_html += "</div>"
+    st.markdown(acreedores_html, unsafe_allow_html=True)
 
 st.markdown("---")
 

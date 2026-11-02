@@ -1,12 +1,24 @@
+    st.subheader("🧠 4. Informe Ejecutivo redactado por IA")
+    if st.button("Generar Informe Ejecutivo con IA"):
+        if not api_key:
+            st.error("Introduce tu API Key en la barra lateral.")
+        else:
+            with st.spinner("Redactando informe..."):
+                summary = ""
+                for d in datos_empresa:
+                    summary += f"Año {d['year_label']}: Ingresos: {d['ingresos']}, RN: {d['resultado_neto']}, Acreedores(00239): {d['acreedores_00239']}, Proveedores(00240): {d['proveedores_00240']}.\n"
+                
+                rules = f"B.2 iguales: {b2_status_ok}. Errores detectados: {[e for d in datos_empresa for e in d['errores_acreedores']]}."
+                
+                ai_text = generate_ai_report(api_key, summary, rules)
+                st.markdown(f'<div class="ai-report">{ai_text}</div>', unsafe_allow_html=True)
+
     # ==========================================================
     # 5. SOLAPAS TIPO EXCEL
     # ==========================================================
     st.markdown("---")
     st.subheader("📑 Solapas del Excel")
 
-    # --------------------------
-    # Definición de filas Balance
-    # --------------------------
     filas_balance = [
         ("Inmovilizado Inmaterial", lambda d: v(d, '00102') or v(d, '00101')),
         ("Inmovilizado Material", lambda d: v(d, '00111')),
@@ -38,9 +50,6 @@
         ("TOTAL PASIVO", lambda d: v(d, '00252')),
     ]
 
-    # --------------------------
-    # Definición de filas Explotación
-    # --------------------------
     filas_explotacion = [
         ("CIFRA DE NEGOCIO", lambda d: v(d, '00255')),
         ("Aprovisionamientos", lambda d: abs(v(d, '00260'))),
@@ -58,9 +67,6 @@
         ("Cash-Flow", lambda d: v(d, '00500') + abs(v(d, '00284'))),
     ]
 
-    # --------------------------
-    # Bal: resumen en miles de €
-    # --------------------------
     filas_bal = [
         ("INMOVILIZADO", lambda d: v(d, '00101') / 1000),
         ("EXISTENCIAS", lambda d: v(d, '00138') / 1000),
@@ -73,9 +79,6 @@
         ("TOTAL PASIVO", lambda d: v(d, '00252') / 1000),
     ]
 
-    # --------------------------
-    # Exp: resumen en miles de €
-    # --------------------------
     filas_exp = [
         ("VENTAS", lambda d: v(d, '00255') / 1000),
         ("- COSTE DE VENTAS", lambda d: abs(v(d, '00260')) / 1000),
@@ -88,20 +91,15 @@
         ("Resultado Neto", lambda d: v(d, '00500') / 1000),
     ]
 
-    # --------------------------
-    # Umbral aproximado
-    # --------------------------
     def tabla_umbral(datos):
         rows = []
         for d in datos:
             ingresos = v(d, '00255')
             aprov = abs(v(d, '00260'))
             cf = abs(v(d, '00270')) + abs(v(d, '00284')) + abs(v(d, '00305'))
-
             mc = (1 - (aprov / ingresos)) if ingresos else 0
             umbral = (cf / mc) if mc > 0 else None
             cobertura = (ingresos / umbral) if umbral and umbral > 0 else None
-
             rows.append({
                 "Año": d["year_label"],
                 "Ventas reales": ingresos,
@@ -110,12 +108,8 @@
                 "Umbral ventas aprox.": umbral,
                 "Cobertura": cobertura
             })
-
         return pd.DataFrame(rows)
 
-    # --------------------------
-    # Fondo de maniobra por año
-    # --------------------------
     def tabla_fonman(d):
         ingresos = v(d, '00255')
         aprov = abs(v(d, '00260'))
@@ -127,17 +121,11 @@
         dias_cobro = (clientes / ingresos * 365) if ingresos else 0
         dias_pago = (proveedores / aprov * 365) if aprov else 0
         ciclo_maduracion = dias_almacen + dias_cobro
-
-        gastos_diarios = (
-            aprov + abs(v(d, '00270')) + abs(v(d, '00279'))
-        ) / 365 if 365 else 0
-
+        gastos_diarios = (aprov + abs(v(d, '00270')) + abs(v(d, '00279'))) / 365 if 365 else 0
         fm_necesario = gastos_diarios * ciclo_maduracion
         fin_proveedores = (proveedores / 365 * dias_pago) if dias_pago else 0
-
         capitales_permanentes = v(d, '00185') + v(d, '00216')
         fin_capitales_permanentes = capitales_permanentes - v(d, '00101')
-
         resultado = fm_necesario - fin_proveedores - fin_capitales_permanentes
 
         return pd.DataFrame([
@@ -152,18 +140,8 @@
             {"Concepto": "Superávit / Déficit fondo de maniobra", "Valor": resultado},
         ])
 
-    # --------------------------
-    # Creación de pestañas
-    # --------------------------
     tabs = st.tabs([
-        "Balance",
-        "Explotación",
-        "Bal",
-        "Exp",
-        "Umbral",
-        "Fon.Man.1",
-        "Fon.Man.2",
-        "Fon.Man.3",
+        "Balance", "Explotación", "Bal", "Exp", "Umbral", "Fon.Man.1", "Fon.Man.2", "Fon.Man.3"
     ])
 
     with tabs[0]:
@@ -195,30 +173,26 @@
     with tabs[5]:
         if len(datos_empresa) >= 1:
             st.markdown(f"#### Fondo de maniobra - {datos_empresa[0]['year_label']}")
-            st.dataframe(
-                tabla_fonman(datos_empresa[0]).style.format({"Valor": "{:,.2f}"}),
-                use_container_width=True,
-                hide_index=True
-            )
+            st.dataframe(tabla_fonman(datos_empresa[0]).style.format({"Valor": "{:,.2f}"}), use_container_width=True, hide_index=True)
 
     with tabs[6]:
         if len(datos_empresa) >= 2:
             st.markdown(f"#### Fondo de maniobra - {datos_empresa[1]['year_label']}")
-            st.dataframe(
-                tabla_fonman(datos_empresa[1]).style.format({"Valor": "{:,.2f}"}),
-                use_container_width=True,
-                hide_index=True
-            )
+            st.dataframe(tabla_fonman(datos_empresa[1]).style.format({"Valor": "{:,.2f}"}), use_container_width=True, hide_index=True)
         else:
             st.info("Se necesitan al menos 2 ejercicios para esta solapa.")
 
     with tabs[7]:
         if len(datos_empresa) >= 3:
             st.markdown(f"#### Fondo de maniobra - {datos_empresa[2]['year_label']}")
-            st.dataframe(
-                tabla_fonman(datos_empresa[2]).style.format({"Valor": "{:,.2f}"}),
-                use_container_width=True,
-                hide_index=True
-            )
+            st.dataframe(tabla_fonman(datos_empresa[2]).style.format({"Valor": "{:,.2f}"}), use_container_width=True, hide_index=True)
         else:
             st.info("Se necesitan al menos 3 ejercicios para esta solapa.")
+
+    st.markdown("---")
+    st.markdown("""
+    <div style='text-align: center; color: #6B7280; font-size: 12px;'>
+        <p>TODO MODELO 200 | Desarrollado con estándares de 22 años de experiencia.</p>
+        <p>Esta web no guarda ninguno de los documentos subidos. Análisis 100% anónimo.</p>
+    </div>
+    """, unsafe_allow_html=True)

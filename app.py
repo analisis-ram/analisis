@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO (ESTILO IMAGEN)
+# 2. CSS MEJORADO (ESTILO CAJETÍN NARANJA EXACTO)
 # ============================================
 st.markdown("""
 <style>
@@ -52,50 +52,95 @@ st.markdown("""
         font-size: 16px !important;
     }
 
-    /* --- ESTILOS DEL ÁREA DE SUBIDA (COMO EN LA IMAGEN) --- */
-    [data-testid="stFileUploadDropzone"] {
-        background-color: #FFB03A !important; /* Naranja brillante de la imagen */
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 20px !important;
-    }
+    /* ==========================================================
+       ESTILOS DEL CAJETÍN DE SUBIDA NARANJA (EXACTO A LA IMAGEN)
+       ========================================================== */
     
-    /* Quitar fondos grises internos */
-    [data-testid="stFileUploadDropzone"] div,
-    [data-testid="stFileUploadDropzone"] section {
-        background-color: transparent !important;
-    }
-
-    /* El texto de "200MB per file" */
-    [data-testid="stFileUploadDropzone"] small {
-        color: #1A1A1A !important; /* Letra oscura */
+    /* Etiqueta superior ("Arrastra aquí tus PDFs...") */
+    [data-testid="stFileUploader"] label p {
+        font-size: 15px !important;
         font-weight: 600 !important;
-        font-size: 14px !important;
+        color: #FAFAFA !important;
+        margin-bottom: 6px !important;
     }
 
-    /* El botón de Upload */
+    /* Contenedor principal (Cajetín Naranja) */
+    [data-testid="stFileUploaderDropzone"],
+    [data-testid="stFileUploadDropzone"],
+    section[data-testid="stFileUploaderDropzone"] {
+        background-color: #F8B155 !important; /* Naranja exacto de tu imagen */
+        border: 4px solid #262730 !important; /* Borde exterior oscuro sutil */
+        border-radius: 10px !important;
+        padding: 18px 22px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        min-height: 80px !important;
+    }
+
+    /* Ocultar el icono de nube por defecto y el texto "Drag and drop file here" */
+    [data-testid="stFileUploaderDropzoneInstructions"] svg,
+    [data-testid="stFileUploaderDropzoneInstructions"] > div > span {
+        display: none !important;
+    }
+
+    /* Bloque de instrucciones (donde queda "200MB per file • PDF") */
+    [data-testid="stFileUploaderDropzoneInstructions"] {
+        order: 2 !important;
+        background-color: #262730 !important; /* Fondo oscuro del recuadro interno */
+        padding: 8px 16px 8px 10px !important;
+        border-radius: 0 8px 8px 0 !important;
+        margin: 0 !important;
+        height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Texto "200MB per file • PDF" */
+    [data-testid="stFileUploaderDropzoneInstructions"] small,
+    [data-testid="stFileUploaderDropzone"] small {
+        color: #A3A8B8 !important;
+        font-weight: 600 !important;
+        font-size: 13.5px !important;
+        margin: 0 !important;
+        line-height: 1 !important;
+    }
+
+    /* Botón de "Browse files" / "Upload" */
+    [data-testid="stFileUploaderDropzone"] button,
     [data-testid="stFileUploadDropzone"] button {
-        background-color: #1A1A1A !important; /* Fondo casi negro */
-        color: #FFFFFF !important; /* Letra blanca */
-        border: none !important;
-        border-radius: 6px !important;
-        padding: 8px 16px !important;
-        font-weight: bold !important;
-        transition: 0.3s;
-    }
-    
-    /* El texto y el icono dentro del botón */
-    [data-testid="stFileUploadDropzone"] button span {
+        order: 1 !important;
+        background-color: #14161F !important; /* Casi negro para destacar el botón */
         color: #FFFFFF !important;
-    }
-    [data-testid="stFileUploadDropzone"] button svg {
-        fill: #FFFFFF !important;
+        border: 4px solid #262730 !important; /* Conecta visualmente con el bloque de al lado */
+        border-radius: 8px 0 0 8px !important;
+        padding: 0 16px !important;
+        height: 42px !important;
+        font-weight: 700 !important;
+        font-size: 14px !important;
+        margin: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        box-shadow: none !important;
     }
 
-    /* Efecto hover del botón */
-    [data-testid="stFileUploadDropzone"] button:hover {
-        background-color: #333333 !important;
+    /* Añadir icono de subida antes del texto del botón */
+    [data-testid="stFileUploaderDropzone"] button::before {
+        content: "↑";
+        font-weight: 900;
+        font-size: 15px;
+        margin-right: 4px;
+        border-bottom: 2px solid #FFFFFF;
+        line-height: 0.8;
+        padding-bottom: 1px;
+    }
+
+    [data-testid="stFileUploaderDropzone"] button:hover {
+        background-color: #1F2230 !important;
         color: #FFFFFF !important;
+        border-color: #262730 !important;
     }
 
     /* --- ESTILOS GENERALES --- */
@@ -104,6 +149,9 @@ st.markdown("""
     [data-testid="stSidebarHeader"] button { display: none !important; }
     div[data-testid="stSidebar"] { min-width: 320px !important; max-width: 320px !important; }
     
+    /* Ocultar el icono de enlace (cadena) al lado de los títulos H1 */
+    h1 a { display: none !important; }
+
     /* Alertas */
     .alert-critical { background-color: #EF4444; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
     .alert-warning { background-color: #F59E0B; color: white !important; padding: 15px; border-radius: 8px; margin-bottom: 10px; font-weight: 500; }
@@ -212,17 +260,20 @@ NOMBRES_CUENTAS = {
 # 3. FUNCIONES DE EXTRACCIÓN DE PDF
 # ============================================
 def parse_spanish_number(num_str):
-    if not num_str: return None
+    if not num_str:
+        return None
     try:
         return float(num_str.replace('.', '').replace(',', '.').strip())
-    except: return None
+    except:
+        return None
 
 def extract_data_from_pdf(pdf_file):
     text = ""
     with pdfplumber.open(pdf_file) as pdf:
         for page in pdf.pages:
             extracted = page.extract_text()
-            if extracted: text += extracted + "\n"
+            if extracted:
+                text += extracted + "\n"
     
     data = {
         'year': 0, 'nif': 'Desconocido', 'empresa': 'Desconocida', 
@@ -241,7 +292,8 @@ def extract_data_from_pdf(pdf_file):
     for i, line in enumerate(lines):
         if "Ejercicio" in line or "De 01/01/" in line or "EL 1 1 " in line:
             year_match = re.search(r'(20\d{2})', line)
-            if year_match: data['year'] = int(year_match.group(1))
+            if year_match:
+                data['year'] = int(year_match.group(1))
         
         if "Apellidos y nombre o razón social" in line or "Apellidos y Nombre / Razón social" in line:
             if i + 1 < len(lines):
@@ -255,15 +307,18 @@ def extract_data_from_pdf(pdf_file):
         data['nif'] = nif_empresa_match.group(1).strip()
     else:
         nif_empresa_match = re.search(r'\b([A-Z]\d{8})\b', text)
-        if nif_empresa_match: data['nif'] = nif_empresa_match.group(1).strip()
+        if nif_empresa_match:
+            data['nif'] = nif_empresa_match.group(1).strip()
         else:
             nif_dni_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*(\d{8}[A-Z])', text, re.IGNORECASE)
-            if nif_dni_match: data['nif'] = nif_dni_match.group(1).strip()
+            if nif_dni_match:
+                data['nif'] = nif_dni_match.group(1).strip()
 
     def get_val(casilla):
-        pattern = rf"{casilla}.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
+        pattern = rf"\b{casilla}\b.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
         match = re.search(pattern, text)
-        if match: return parse_spanish_number(match.group(1))
+        if match:
+            return parse_spanish_number(match.group(1))
         return None 
 
     data['ingresos'] = get_val('00255') or 0.0
@@ -335,7 +390,6 @@ st.sidebar.subheader("🤖 IA Privada")
 st.sidebar.markdown("Introduce tu API Key. *No se almacena.*")
 api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 
-# --- BOTÓN DE BORRAR EN LA BARRA LATERAL ---
 if st.session_state.uploaded_files is not None:
     st.sidebar.markdown("---")
     if st.sidebar.button("🗑️ Borrar documentos y empezar de nuevo", type="primary", use_container_width=True):
@@ -350,14 +404,19 @@ datos_empresa = []
 if not st.session_state.uploaded_files:
     st.markdown("""
         <div style="text-align: center; margin-top: 5vh; margin-bottom: 30px;">
-            <h1 style="color: #D97706; font-size: 3.5rem; margin-bottom: 20px;">TODO MODELO 200</h1>
+            <h1 style="color: #D97706; font-size: 3.5rem; font-weight: 800; margin-bottom: 20px;">TODO MODELO 200</h1>
             <p style="font-size: 1.3rem; color: #A0A0A0;">Sube al menos 2 Modelos 200 de la misma empresa para comenzar el análisis.</p>
         </div>
     """, unsafe_allow_html=True)
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        uploaded = st.file_uploader("Arrastra aquí tus PDFs (mínimo 2)", type="pdf", accept_multiple_files=True, key=f"uploader_{st.session_state.uploader_key}")
+        uploaded = st.file_uploader(
+            "Arrastra aquí tus PDFs (mínimo 2)", 
+            type="pdf", 
+            accept_multiple_files=True, 
+            key=f"uploader_{st.session_state.uploader_key}"
+        )
         if uploaded:
             st.session_state.uploaded_files = uploaded
             st.rerun()
@@ -423,7 +482,7 @@ if uploaded_files:
             extracted = extract_data_from_pdf(file)
             datos_empresa.append(extracted)
         except Exception as e:
-            st.error(f"Error con {file.name}")
+            st.error(f"Error con {file.name}: {e}")
         finally:
             loader_placeholder.empty()
     
@@ -508,12 +567,10 @@ if datos_empresa and len(datos_empresa) >= 2:
 
     st.markdown("---")
     
-    # --- GRÁFICAS DE BARRAS CORREGIDAS ---
+    # --- GRÁFICAS DE BARRAS ---
     st.subheader("📊 2. Evolución de Existencias y Acreedores")
     
     col_chart1, col_chart2 = st.columns(2)
-    
-    # Forzamos que los años sean texto para que Plotly los trate como categorías
     years_str = [str(y) for y in years]
 
     with col_chart1:

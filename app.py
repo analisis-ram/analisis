@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO (CAJETÍN 100% NARANJA Y BOTÓN DE INICIO)
+# 2. CSS MEJORADO (CAJETÍN MÁS GRANDE Y BOTÓN AMPLIADO)
 # ============================================
 st.markdown("""
 <style>
@@ -54,7 +54,7 @@ st.markdown("""
     }
 
     /* ==========================================================
-       ESTILOS DEL CAJETÍN DE SUBIDA 100% NARANJA Y LIMPIO
+       ESTILOS DEL CAJETÍN DE SUBIDA (MÁS GRANDE Y CON SCROLL)
        ========================================================== */
     [data-testid="stFileUploader"] label p {
         font-size: 15px !important;
@@ -68,13 +68,15 @@ st.markdown("""
     section[data-testid="stFileUploaderDropzone"] {
         background-color: #F8B155 !important;
         border: 2px dashed #262730 !important;
-        border-radius: 10px !important;
-        padding: 18px 22px !important;
+        border-radius: 12px !important;
+        padding: 20px !important;
         display: flex !important;
-        flex-direction: row !important;
-        align-items: center !important;
-        justify-content: center !important;
-        min-height: 80px !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        justify-content: flex-start !important;
+        min-height: 160px !important;
+        max-height: 240px !important;
+        overflow-y: auto !important;
     }
 
     [data-testid="stFileUploaderDropzoneInstructions"] {
@@ -95,7 +97,7 @@ st.markdown("""
         height: 46px !important;
         font-weight: 700 !important;
         font-size: 15px !important;
-        margin: 0 !important;
+        margin: 5px 0 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
@@ -121,20 +123,20 @@ st.markdown("""
         border-color: #262730 !important;
     }
 
-    /* --- ESTILOS DEL BOTÓN DE ACCIÓN PRINCIPAL --- */
-    .stButton > button.btn-comenzar {
+    /* --- ESTILOS DEL BOTÓN DE ACCIÓN PRINCIPAL (MÁS GRANDE Y LLAMATIVO) --- */
+    .stButton > button {
         background-color: #F8B155 !important;
         color: #14161F !important;
-        font-size: 18px !important;
+        font-size: 20px !important;
         font-weight: 900 !important;
-        padding: 16px 32px !important;
-        border-radius: 12px !important;
-        border: 3px solid #262730 !important;
+        padding: 20px 36px !important;
+        border-radius: 14px !important;
+        border: 4px solid #14161F !important;
         width: 100% !important;
-        box-shadow: 0 8px 20px rgba(248, 177, 85, 0.3) !important;
+        box-shadow: 0 10px 25px rgba(248, 177, 85, 0.4) !important;
         transition: 0.3s;
     }
-    .stButton > button.btn-comenzar:hover {
+    .stButton > button:hover {
         background-color: #F59E0B !important;
         transform: translateY(-2px);
     }
@@ -509,7 +511,6 @@ if st.session_state.datos_empresa is None:
         
         if uploaded_files:
             st.markdown("<br>", unsafe_allow_html=True)
-            # Botón explícito para comenzar la extracción
             if st.button("COMENZAR EXTRACCIÓN DATOS MODELOS 200", key="btn_iniciar", use_container_width=True):
                 img_base64 = ""
                 if os.path.exists("modelo200.png"):
@@ -641,7 +642,7 @@ if datos_empresa and len(datos_empresa) >= 2:
         </div>
     """, unsafe_allow_html=True)
 
-    st.title("💼 Informe de Auditoría Financiera y Riesgo")
+    st.title("💼 Informe Financiero y Riesgo")
     st.markdown(f"**Empresa:** {nombre_empresa} | **NIF:** {nif_empresa} | **Periodo analizado:** {years_str[0]} - {years_str[-1]}")
     st.markdown("---")
 

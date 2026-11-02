@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO Y FORZADO
+# 2. CSS MEJORADO (ESTILO IMAGEN)
 # ============================================
 st.markdown("""
 <style>
@@ -52,42 +52,50 @@ st.markdown("""
         font-size: 16px !important;
     }
 
-    /* --- ESTILOS DEL ÁREA DE SUBIDA (NARANJA CLARO FORZADO) --- */
+    /* --- ESTILOS DEL ÁREA DE SUBIDA (COMO EN LA IMAGEN) --- */
     [data-testid="stFileUploadDropzone"] {
-        background-color: #FFE0B2 !important; /* Fondo naranja claro */
-        border: 3px dashed #D97706 !important;
-        padding: 40px !important;
-        border-radius: 20px !important;
-        text-align: center;
+        background-color: #FFB03A !important; /* Naranja brillante de la imagen */
+        border: none !important;
+        border-radius: 8px !important;
+        padding: 20px !important;
     }
     
-    /* REGLA AGRESIVA: Obligamos a TODOS los divs internos a ser transparentes */
+    /* Quitar fondos grises internos */
     [data-testid="stFileUploadDropzone"] div,
-    [data-testid="stFileUploadDropzone"] span,
-    [data-testid="stFileUploadDropzone"] section,
-    [data-testid="stFileUploadDropzone"] small {
+    [data-testid="stFileUploadDropzone"] section {
         background-color: transparent !important;
-        color: #1A1A1A !important; 
-        font-weight: bold !important;
     }
 
-    /* El botón de Upload (restauramos su color para que no sea transparente) */
-    [data-testid="stFileUploadDropzone"] button {
-        background-color: #D97706 !important; 
-        color: #FFFFFF !important; 
-        border: none !important;
-        border-radius: 10px !important;
-        padding: 10px 20px !important;
-        font-weight: bold !important;
+    /* El texto de "200MB per file" */
+    [data-testid="stFileUploadDropzone"] small {
+        color: #1A1A1A !important; /* Letra oscura */
+        font-weight: 600 !important;
+        font-size: 14px !important;
     }
+
+    /* El botón de Upload */
+    [data-testid="stFileUploadDropzone"] button {
+        background-color: #1A1A1A !important; /* Fondo casi negro */
+        color: #FFFFFF !important; /* Letra blanca */
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 8px 16px !important;
+        font-weight: bold !important;
+        transition: 0.3s;
+    }
+    
+    /* El texto y el icono dentro del botón */
     [data-testid="stFileUploadDropzone"] button span {
         color: #FFFFFF !important;
     }
     [data-testid="stFileUploadDropzone"] button svg {
         fill: #FFFFFF !important;
     }
+
+    /* Efecto hover del botón */
     [data-testid="stFileUploadDropzone"] button:hover {
-        background-color: #B45309 !important;
+        background-color: #333333 !important;
+        color: #FFFFFF !important;
     }
 
     /* --- ESTILOS GENERALES --- */
@@ -358,7 +366,7 @@ if not st.session_state.uploaded_files:
 
 uploaded_files = st.session_state.uploaded_files
 
-# --- BOTÓN DE REINICIO EN EL CENTRO (Muy visible cuando ya hay archivos) ---
+# --- BOTÓN DE REINICIO EN EL CENTRO ---
 st.markdown("---")
 if st.button("🗑️ Borrar todos los archivos y actualizar la web", type="primary", use_container_width=True):
     st.session_state.clear()
@@ -500,29 +508,34 @@ if datos_empresa and len(datos_empresa) >= 2:
 
     st.markdown("---")
     
-    # --- GRÁFICAS DE BARRAS ---
+    # --- GRÁFICAS DE BARRAS CORREGIDAS ---
     st.subheader("📊 2. Evolución de Existencias y Acreedores")
     
     col_chart1, col_chart2 = st.columns(2)
     
+    # Forzamos que los años sean texto para que Plotly los trate como categorías
+    years_str = [str(y) for y in years]
+
     with col_chart1:
         df_exist = pd.DataFrame({
-            'Año': years,
-            'Existencias (00138)': [d['existencias_00138'] if d['existencias_00138'] is not None else 0 for d in datos_empresa]
+            'Año': years_str,
+            'Existencias': [d['existencias_00138'] if d['existencias_00138'] is not None else 0 for d in datos_empresa]
         })
-        fig_exist = px.bar(df_exist, x='Año', y='Existencias (00138)', title='Evolución de Existencias', text_auto='.2s', color_discrete_sequence=['#1d4ed8'])
-        fig_exist.update_layout(template='plotly_dark', title_font=dict(size=20, color='#1d4ed8'))
+        fig_exist = px.bar(df_exist, x='Año', y='Existencias', title='Evolución de Existencias (00138)', color_discrete_sequence=['#1d4ed8'])
+        fig_exist.update_traces(texttemplate='%{y:.2s}', textposition='outside')
+        fig_exist.update_layout(template='plotly_dark', title_font=dict(size=18, color='#1d4ed8'), xaxis_title="Año", yaxis_title="Euros")
         st.plotly_chart(fig_exist, use_container_width=True)
 
     with col_chart2:
         df_acreedores = pd.DataFrame({
-            'Año': years,
-            'Cta 00239 (Acreedores)': [d['acreedores_00239'] if d['acreedores_00239'] is not None else 0 for d in datos_empresa],
-            'Cta 00240 (Proveedores)': [d['proveedores_00240'] if d['proveedores_00240'] is not None else 0 for d in datos_empresa]
+            'Año': years_str,
+            'Acreedores (00239)': [d['acreedores_00239'] if d['acreedores_00239'] is not None else 0 for d in datos_empresa],
+            'Proveedores (00240)': [d['proveedores_00240'] if d['proveedores_00240'] is not None else 0 for d in datos_empresa]
         })
         df_melted = df_acreedores.melt(id_vars='Año', var_name='Cuenta', value_name='Importe')
-        fig_acreedores = px.bar(df_melted, x='Año', y='Importe', color='Cuenta', barmode='group', title='Evolución de Acreedores y Proveedores', text_auto='.2s', color_discrete_sequence=['#60a5fa', '#3b82f6'])
-        fig_acreedores.update_layout(template='plotly_dark', title_font=dict(size=20, color='#60a5fa'))
+        fig_acreedores = px.bar(df_melted, x='Año', y='Importe', color='Cuenta', barmode='group', title='Evolución de Acreedores y Proveedores', color_discrete_sequence=['#60a5fa', '#3b82f6'])
+        fig_acreedores.update_traces(texttemplate='%{y:.2s}', textposition='outside')
+        fig_acreedores.update_layout(template='plotly_dark', title_font=dict(size=18, color='#60a5fa'), xaxis_title="Año", yaxis_title="Euros")
         st.plotly_chart(fig_acreedores, use_container_width=True)
 
     st.markdown("---")
@@ -543,16 +556,16 @@ if datos_empresa and len(datos_empresa) >= 2:
     col_g1, col_g2 = st.columns(2)
     with col_g1:
         fig = go.Figure()
-        fig.add_trace(go.Bar(name='Ingresos', x=years, y=[d['ingresos'] for d in datos_empresa], marker_color='#3B82F6'))
-        fig.add_trace(go.Bar(name='Resultado Neto', x=years, y=[d['resultado_neto'] for d in datos_empresa], marker_color='#10B981'))
-        fig.update_layout(title='Evolución de Ingresos y Resultados', barmode='group', template='plotly_dark')
+        fig.add_trace(go.Bar(name='Ingresos', x=years_str, y=[d['ingresos'] for d in datos_empresa], marker_color='#3B82F6'))
+        fig.add_trace(go.Bar(name='Resultado Neto', x=years_str, y=[d['resultado_neto'] for d in datos_empresa], marker_color='#10B981'))
+        fig.update_layout(title='Evolución de Ingresos y Resultados', barmode='group', template='plotly_dark', xaxis_title="Año", yaxis_title="Euros")
         st.plotly_chart(fig, use_container_width=True)
         
     with col_g2:
         fig = go.Figure()
-        fig.add_trace(go.Scatter(name='Activo Total', x=years, y=[d['activo_total'] for d in datos_empresa], mode='lines+markers', line=dict(color='#EF4444', width=3)))
-        fig.add_trace(go.Scatter(name='Patrimonio Neto', x=years, y=[d['patrimonio_neto'] for d in datos_empresa], mode='lines+markers', line=dict(color='#3B82F6', width=3)))
-        fig.update_layout(title='Evolución del Balance', template='plotly_dark')
+        fig.add_trace(go.Scatter(name='Activo Total', x=years_str, y=[d['activo_total'] for d in datos_empresa], mode='lines+markers', line=dict(color='#EF4444', width=3)))
+        fig.add_trace(go.Scatter(name='Patrimonio Neto', x=years_str, y=[d['patrimonio_neto'] for d in datos_empresa], mode='lines+markers', line=dict(color='#3B82F6', width=3)))
+        fig.update_layout(title='Evolución del Balance', template='plotly_dark', xaxis_title="Año", yaxis_title="Euros")
         st.plotly_chart(fig, use_container_width=True)
 
     st.markdown("---")

@@ -4,7 +4,7 @@ import plotly.graph_objects as go
 import pdfplumber
 import re
 import openai
-import streamlit.components.v1 as components
+import time
 import textwrap
 
 # ============================================
@@ -18,7 +18,7 @@ st.set_page_config(
 )
 
 # ============================================
-# CSS MEJORADO
+# CSS MEJORADO (ESTILOS Y ANIMACIONES)
 # ============================================
 st.markdown("""
 <style>
@@ -58,10 +58,10 @@ st.markdown("""
         display: inline-block;
     }
 
-    /* Animación del Martillo y el Libro (Loader) */
+    /* Animación del Martillo */
     @keyframes smash {
         0% { transform: rotate(0deg); }
-        30% { transform: rotate(-40deg); }
+        30% { transform: rotate(-45deg); }
         50% { transform: rotate(15deg); }
         70% { transform: rotate(-10deg); }
         100% { transform: rotate(0deg); }
@@ -70,29 +70,6 @@ st.markdown("""
         display: inline-block;
         animation: smash 0.6s infinite;
         transform-origin: bottom right;
-        font-size: 35px;
-        position: absolute;
-        top: -10px;
-        left: 5px;
-        z-index: 2;
-    }
-    .css-book {
-        width: 45px;
-        height: 30px;
-        background-color: #3B82F6;
-        border: 2px solid #1E3A8A;
-        border-radius: 4px;
-        color: white;
-        font-size: 9px;
-        font-weight: bold;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        position: absolute;
-        bottom: 5px;
-        left: 0px;
-        z-index: 1;
-        box-shadow: 2px 2px 0px #1E3A8A;
     }
     
     /* Barra de progreso verde */
@@ -225,21 +202,38 @@ api_key = st.sidebar.text_input("OpenAI API Key", type="password")
 datos_empresa = []
 
 # ============================================
-# PROCESAMIENTO CON ANIMACIÓN (MARTILLO Y BARRA)
+# PROCESAMIENTO CON ANIMACIÓN (MARTILLO Y LIBRO MOD. 200)
 # ============================================
 if uploaded_files:
     for file in uploaded_files:
-        # Contenedor para la animación
         loader_placeholder = st.empty()
         
-        # HTML del loader con el libro CSS "MOD. 200" y la barra verde
+        # HTML para el libro 3D y el martillo
         loader_html = textwrap.dedent(f"""
-            <div style="display: flex; align-items: center; background-color: #262730; padding: 15px; border-radius: 10px; border-left: 5px solid #3B82F6; width: 100%; box-sizing: border-box; margin-bottom: 15px;">
-                <div style="width: 60px; height: 50px; position: relative; margin-right: 15px; flex-shrink: 0;">
-                    <span class="animated-hammer">🔨</span>
-                    <div class="css-book">MOD. 200</div>
+            <div style="display: flex; align-items: center; background-color: #262730; padding: 15px 20px; border-radius: 10px; border-left: 5px solid #3B82F6; width: 100%; box-sizing: border-box;">
+                
+                <!-- Zona del Martillo y el Libro -->
+                <div style="position: relative; width: 60px; height: 50px; margin-right: 20px; flex-shrink: 0;">
+                    <span class="animated-hammer" style="font-size: 35px; position: absolute; top: -10px; left: 15px; z-index: 2;">🔨</span>
+                    
+                    <!-- El Libro Azul -->
+                    <div style="
+                        position: absolute; bottom: 0px; left: 0px; z-index: 1;
+                        width: 40px; height: 30px;
+                        background: linear-gradient(135deg, #3B82F6, #1E3A8A);
+                        color: white; font-family: sans-serif; font-size: 10px; font-weight: 900;
+                        display: flex; justify-content: center; align-items: center;
+                        border-radius: 2px 6px 6px 2px;
+                        box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+                        border-left: 5px solid #1E3A8A; /* Simula el lomo del libro */
+                        text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+                    ">
+                        MOD.<br>200
+                    </div>
                 </div>
-                <div style="flex-shrink: 0; margin-right: 15px;">
+
+                <!-- Texto y Barra de progreso -->
+                <div style="flex-shrink: 0; margin-right: 20px;">
                     <div style="color: #FAFAFA; font-size: 16px; font-weight: bold;">Auditando documento...</div>
                     <div style="color: #A0A0A0; font-size: 13px;">{file.name}</div>
                 </div>
@@ -249,8 +243,10 @@ if uploaded_files:
             </div>
         """)
         
+        # Mostramos el gráfico y forzamos una pausa de 1.5s para que se vea la animación
         with loader_placeholder:
-            components.html(loader_html, height=90)
+            st.markdown(loader_html, unsafe_allow_html=True)
+            time.sleep(1.5)
             
         try:
             extracted = extract_data_from_pdf(file)

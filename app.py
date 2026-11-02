@@ -13,7 +13,7 @@ import os
 # 1. CONFIGURACIÓN DE PÁGINA
 # ============================================
 st.set_page_config(
-    page_title="Auditoría Financiera Senior | Modelo 200",
+    page_title="TODO MODELO 200",
     page_icon="💼",
     layout="wide", 
     initial_sidebar_state="expanded"
@@ -40,42 +40,46 @@ st.markdown("""
         background-color: rgba(255, 255, 255, 0.9) !important;
     }
 
-    /* --- ESTILOS DEL ÁREA DE SUBIDA (BOTÓN NARANJA Y TEXTO NARANJA) --- */
+    /* --- ESTILOS DEL ÁREA DE SUBIDA (FONDO NARANJA CLARITO) --- */
     [data-testid="stFileUploadDropzone"] {
         border: 3px dashed #D97706 !important;
-        background-color: #1A1A1A !important; 
+        background-color: #FFF3E0 !important; /* Naranjita clarito */
         padding: 40px !important;
         border-radius: 20px !important;
         text-align: center;
     }
     
+    /* Textos del cajetín en naranja oscuro para contrastar */
     [data-testid="stFileUploadDropzone"] span, 
     [data-testid="stFileUploadDropzone"] small,
     [data-testid="stFileUploadDropzone"] p {
-        color: #FF9800 !important; 
+        color: #D97706 !important; 
         font-weight: bold !important;
     }
 
+    /* El botón de Upload */
     [data-testid="stFileUploadDropzone"] button {
         background-color: transparent !important;
-        color: #FF9800 !important; 
-        border: 2px solid #FF9800 !important;
+        color: #D97706 !important; 
+        border: 2px solid #D97706 !important;
         border-radius: 10px !important;
         padding: 10px 20px !important;
         font-weight: bold !important;
         transition: 0.3s;
     }
     
+    /* El icono del botón Upload */
     [data-testid="stFileUploadDropzone"] button svg {
-        fill: #FF9800 !important;
+        fill: #D97706 !important;
     }
 
+    /* Efecto al pasar el ratón por encima */
     [data-testid="stFileUploadDropzone"] button:hover {
-        background-color: #FF9800 !important;
-        color: #1A1A1A !important; 
+        background-color: #D97706 !important;
+        color: #FFFFFF !important; 
     }
     [data-testid="stFileUploadDropzone"] button:hover svg {
-        fill: #1A1A1A !important;
+        fill: #FFFFFF !important;
     }
 
     /* --- ESTILOS GENERALES --- */
@@ -306,7 +310,7 @@ def generate_ai_report(api_key, financial_summary, rules_audit):
 # ============================================
 # 5. INTERFAZ SIDEBAR
 # ============================================
-st.sidebar.title("💼 Auditoría Senior")
+st.sidebar.title("💼 TODO MODELO 200")
 st.sidebar.markdown("El sistema analizará los Modelos 200 que subas en la pantalla principal.")
 
 st.sidebar.markdown("---")
@@ -332,7 +336,7 @@ if 'uploaded_files' not in st.session_state:
 if not datos_empresa and not st.session_state.uploaded_files:
     st.markdown("""
         <div style="text-align: center; margin-top: 5vh; margin-bottom: 30px;">
-            <h1 style="color: #D97706; font-size: 3.5rem; margin-bottom: 20px;">Sistema de Auditoría Senior</h1>
+            <h1 style="color: #D97706; font-size: 3.5rem; margin-bottom: 20px;">TODO MODELO 200</h1>
             <p style="font-size: 1.3rem; color: #A0A0A0;">Sube al menos 2 Modelos 200 de la misma empresa para comenzar el análisis.</p>
         </div>
     """, unsafe_allow_html=True)
@@ -381,7 +385,7 @@ if uploaded_files:
                         <div class="rep-chart">📊</div>
                     </div>
                 </div>
-                <div class="loader-title">Transformando Modelo 200...</div>
+                <div class="loader-title">Extrayendo datos del Modelo 200...</div> <!-- TEXTO CAMBIADO AQUÍ -->
                 <div class="loader-subtitle">{file.name}</div>
                 <div class="progress-container">
                     <div class="progress-bar-animated"></div>
@@ -558,7 +562,7 @@ if datos_empresa and len(datos_empresa) >= 2:
     st.markdown("---")
     st.markdown("""
     <div style='text-align: center; color: #6B7280; font-size: 12px;'>
-        <p>Auditoría Financiera Senior | Desarrollado con estándares de 22 años de experiencia.</p>
+        <p>TODO MODELO 200 | Desarrollado con estándares de 22 años de experiencia.</p>
         <p>Esta web no guarda ninguno de los documentos subidos. Análisis 100% anónimo.</p>
     </div>
     """, unsafe_allow_html=True)

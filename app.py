@@ -20,7 +20,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO (CAJETÍN MÁS GRANDE Y BOTÓN AMPLIADO)
+# 2. CSS MEJORADO (CAJETÍN GIGANTE Y BOTÓN AZUL ANCHO)
 # ============================================
 st.markdown("""
 <style>
@@ -54,28 +54,28 @@ st.markdown("""
     }
 
     /* ==========================================================
-       ESTILOS DEL CAJETÍN DE SUBIDA (MÁS GRANDE Y CON SCROLL)
+       ESTILOS DEL CAJETÍN DE SUBIDA (EXTRAGRANDE)
        ========================================================== */
     [data-testid="stFileUploader"] label p {
-        font-size: 15px !important;
-        font-weight: 600 !important;
+        font-size: 16px !important;
+        font-weight: 700 !important;
         color: #FAFAFA !important;
-        margin-bottom: 6px !important;
+        margin-bottom: 8px !important;
     }
 
     [data-testid="stFileUploaderDropzone"],
     [data-testid="stFileUploadDropzone"],
     section[data-testid="stFileUploaderDropzone"] {
         background-color: #F8B155 !important;
-        border: 2px dashed #262730 !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
+        border: 3px dashed #262730 !important;
+        border-radius: 16px !important;
+        padding: 30px !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
         justify-content: flex-start !important;
-        min-height: 160px !important;
-        max-height: 240px !important;
+        min-height: 320px !important;  /* Altura mínima mucho mayor para ver ficheros sin solaparse */
+        max-height: 480px !important;  /* Altura máxima generosa */
         overflow-y: auto !important;
     }
 
@@ -87,21 +87,24 @@ st.markdown("""
         display: none !important;
     }
 
+    /* Botón de subida en color AZUL, ancho y con texto en una sola línea */
     [data-testid="stFileUploaderDropzone"] button,
     [data-testid="stFileUploadDropzone"] button {
-        background-color: #14161F !important;
+        background-color: #3B82F6 !important;  /* Color azul profesional */
         color: #FFFFFF !important;
-        border: 2px solid #262730 !important;
-        border-radius: 8px !important;
-        padding: 0 24px !important;
-        height: 46px !important;
-        font-weight: 700 !important;
-        font-size: 15px !important;
-        margin: 5px 0 !important;
+        border: 2px solid #1E3A8A !important;
+        border-radius: 10px !important;
+        padding: 0 32px !important;
+        min-width: 260px !important;  /* Ancho mínimo garantizado para que quepa el texto */
+        height: 52px !important;
+        font-weight: 800 !important;
+        font-size: 16px !important;
+        white-space: nowrap !important; /* Evita que el texto salte de línea */
+        margin: 10px auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: none !important;
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4) !important;
         visibility: visible !important;
     }
 
@@ -112,18 +115,18 @@ st.markdown("""
     
     [data-testid="stFileUploaderDropzone"] button::after {
         content: "Subir Modelos 200";
-        font-size: 15px !important;
-        font-weight: 700 !important;
+        font-size: 16px !important;
+        font-weight: 800 !important;
         color: #FFFFFF !important;
+        white-space: nowrap !important;
     }
 
     [data-testid="stFileUploaderDropzone"] button:hover {
-        background-color: #1F2230 !important;
-        color: #FFFFFF !important;
-        border-color: #262730 !important;
+        background-color: #2563EB !important;
+        border-color: #1E3A8A !important;
     }
 
-    /* --- ESTILOS DEL BOTÓN DE ACCIÓN PRINCIPAL (MÁS GRANDE Y LLAMATIVO) --- */
+    /* --- ESTILOS DEL BOTÓN DE ACCIÓN PRINCIPAL --- */
     .stButton > button {
         background-color: #F8B155 !important;
         color: #14161F !important;
@@ -362,7 +365,6 @@ def extract_data_from_pdf(pdf_file):
         "importe", "ejercicio", "declaración", "modelo 200", "página"
     ]
 
-    # Búsqueda principal por etiquetas oficiales de la AEAT
     for i, line in enumerate(lines):
         line_lower = line.lower()
         if "apellidos y nombre o razón social" in line_lower or "apellidos y nombre / razón social" in line_lower or "denominación social" in line_lower:
@@ -377,7 +379,6 @@ def extract_data_from_pdf(pdf_file):
             if data['empresa'] != 'Desconocida':
                 break
 
-    # Respaldo: buscar la línea inmediatamente anterior o posterior al NIF detectado
     if data['empresa'] == 'Desconocida' and data['nif'] != 'Desconocido':
         for i, line in enumerate(lines):
             if data['nif'] in line:
@@ -392,7 +393,6 @@ def extract_data_from_pdf(pdf_file):
                 if data['empresa'] != 'Desconocida':
                     break
 
-    # Respaldo final: buscar nombres societarios típicos en las primeras líneas
     if data['empresa'] == 'Desconocida':
         for line in lines[:40]:
             line_lower = line.lower()

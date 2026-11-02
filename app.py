@@ -81,7 +81,7 @@ st.markdown("""
         50% { transform: translateX(-20px); opacity: 0.5; }
         100% { transform: translateX(0); opacity: 1; }
     }
-    .start-arrow { font-size: 80px; color: #3B82F6; animation: pulse-arrow 1.5s infinite; display: inline-block; }
+    .start-arrow { font-size: 80px; color: #FF9800; animation: pulse-arrow 1.5s infinite; display: inline-block; }
 
     /* --- ESTILOS DEL MODAL DE CARGA GIGANTE Y CENTRADO --- */
     .loader-overlay {
@@ -97,7 +97,7 @@ st.markdown("""
         background-color: #262730;
         padding: 50px 80px;
         border-radius: 30px;
-        border-left: 15px solid #FF9800; /* Borde del loader también naranja */
+        border-left: 15px solid #FF9800;
         box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         width: 80vw; max-width: 1000px;
@@ -116,10 +116,12 @@ st.markdown("""
         70% { transform: rotate(-10deg); }
         100% { transform: rotate(0deg); }
     }
+    
+    /* AQUÍ ESTÁ EL CAMBIO: Movemos el martillo a la derecha y ajustamos altura */
     .animated-hammer {
         font-size: 120px;
         position: absolute;
-        top: -60px; left: -20px;
+        top: -50px; left: 40px; /* <--- CAMBIADO: left de -20px a 40px */
         z-index: 2;
         display: inline-block;
         animation: smash 0.8s infinite;

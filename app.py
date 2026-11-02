@@ -40,21 +40,34 @@ st.markdown("""
         background-color: rgba(255, 255, 255, 0.9) !important;
     }
 
+    /* --- ESTILO DEL BOTÓN DE BORRAR (LETRA Y PAPELERA MÁS GORDA) --- */
+    [data-testid="stSidebar"] button[kind="primary"] {
+        font-weight: 900 !important; 
+        font-size: 16px !important;  
+        border-radius: 8px !important;
+        padding: 10px !important;
+    }
+    [data-testid="stSidebar"] button[kind="primary"] p {
+        font-weight: 900 !important;
+        font-size: 16px !important;
+    }
+
     /* --- ESTILOS DEL ÁREA DE SUBIDA (FONDO NARANJA CLARO FORZADO) --- */
     [data-testid="stFileUploadDropzone"] {
-        background-color: #FFE0B2 !important; /* <--- NARANJA CLARO */
+        background-color: #FFE0B2 !important; /* Fondo naranja claro */
         border: 3px dashed #D97706 !important;
         padding: 40px !important;
         border-radius: 20px !important;
         text-align: center;
     }
     
-    /* Forzar transparencia en los divs internos para que no pongan fondo gris */
-    [data-testid="stFileUploadDropzone"] > div {
+    /* Forzar transparencia en TODOS los divs internos para que no pongan fondo gris */
+    [data-testid="stFileUploadDropzone"] div,
+    [data-testid="stFileUploadDropzone"] section {
         background-color: transparent !important;
     }
     
-    /* Textos del cajetín en oscuro para que contrasten con el fondo naranja claro */
+    /* Textos del cajetín en oscuro para contrastar */
     [data-testid="stFileUploadDropzone"] span, 
     [data-testid="stFileUploadDropzone"] small,
     [data-testid="stFileUploadDropzone"] p {
@@ -231,23 +244,19 @@ def extract_data_from_pdf(pdf_file):
         if "Apellidos y nombre o razón social" in line or "Apellidos y Nombre / Razón social" in line:
             if i + 1 < len(lines):
                 posible_nombre = lines[i+1]
-                if not posible_nombre.isdigit() and "NIF" not in posible_nombre and "Teléfono" not in posible_nombre:
+                if not posible_nombre.isdigit() and "NIF" not in posible_nombre and "Teléfono" not in posible_nombre and len(posible_nombre) > 3:
                     data['empresa'] = posible_nombre
-        
-        if "Identificación" in line:
-            for j in range(i, min(i+5, len(lines))):
-                nif_match = re.search(r'([A-Z]\d{8}|[A-Z]\d{7}[A-Z0-9]|\d{8}[A-Z])', lines[j])
-                if nif_match:
-                    data['nif'] = nif_match.group(1)
-                    break
+                    break 
 
-    if data['nif'] == 'Desconocido':
-        nif_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z0-9]+)', text, re.IGNORECASE)
-        if nif_match: data['nif'] = nif_match.group(1).strip()
-    
-    if data['empresa'] == 'Desconocida':
-        empresa_match = re.search(r'Apellidos y nombre o razón social\s*\n\s*([^\n]+)', text, re.IGNORECASE)
-        if empresa_match: data['empresa'] = empresa_match.group(1).strip()
+    nif_empresa_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z]\d{8})', text, re.IGNORECASE)
+    if nif_empresa_match:
+        data['nif'] = nif_empresa_match.group(1).strip()
+    else:
+        nif_empresa_match = re.search(r'\b([A-Z]\d{8})\b', text)
+        if nif_empresa_match: data['nif'] = nif_empresa_match.group(1).strip()
+        else:
+            nif_dni_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*(\d{8}[A-Z])', text, re.IGNORECASE)
+            if nif_dni_match: data['nif'] = nif_dni_match.group(1).strip()
 
     def get_val(casilla):
         pattern = rf"{casilla}.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
@@ -309,8 +318,13 @@ def generate_ai_report(api_key, financial_summary, rules_audit):
         return f"Error al conectar con la IA: {e}"
 
 # ============================================
-# 5. INTERFAZ SIDEBAR
+# 5. INTERFAZ SIDEBAR Y GESTIÓN DE ESTADO
 # ============================================
+if 'uploaded_files' not in st.session_state:
+    st.session_state.uploaded_files = None
+if 'uploader_key' not in st.session_state:
+    st.session_state.uploader_key = 0
+
 st.sidebar.title("💼 TODO MODELO 200")
 st.sidebar.markdown("El sistema analizará los Modelos 200 que subas en la pantalla principal.")
 
@@ -320,10 +334,11 @@ st.sidebar.markdown("Introduce tu API Key. *No se almacena.*")
 api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 
 # --- BOTÓN DE BORRAR EN LA BARRA LATERAL ---
-if 'uploaded_files' in st.session_state and st.session_state.uploaded_files is not None:
+if st.session_state.uploaded_files is not None:
     st.sidebar.markdown("---")
     if st.sidebar.button("🗑️ Borrar documentos y empezar de nuevo", type="primary", use_container_width=True):
         st.session_state.uploaded_files = None
+        st.session_state.uploader_key += 1
         st.rerun()
 
 datos_empresa = []
@@ -331,10 +346,7 @@ datos_empresa = []
 # ============================================
 # 6. PANTALLA PRINCIPAL Y SUBIDOR DE ARCHIVOS
 # ============================================
-if 'uploaded_files' not in st.session_state:
-    st.session_state.uploaded_files = None
-
-if not datos_empresa and not st.session_state.uploaded_files:
+if not st.session_state.uploaded_files:
     st.markdown("""
         <div style="text-align: center; margin-top: 5vh; margin-bottom: 30px;">
             <h1 style="color: #D97706; font-size: 3.5rem; margin-bottom: 20px;">TODO MODELO 200</h1>
@@ -344,7 +356,7 @@ if not datos_empresa and not st.session_state.uploaded_files:
     
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        uploaded = st.file_uploader("Arrastra aquí tus PDFs (mínimo 2)", type="pdf", accept_multiple_files=True)
+        uploaded = st.file_uploader("Arrastra aquí tus PDFs (mínimo 2)", type="pdf", accept_multiple_files=True, key=f"uploader_{st.session_state.uploader_key}")
         if uploaded:
             st.session_state.uploaded_files = uploaded
             st.rerun()

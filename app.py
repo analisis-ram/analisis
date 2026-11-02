@@ -306,7 +306,7 @@ NOMBRES_CUENTAS = {
 }
 
 # ============================================
-# 3. FUNCIONES DE EXTRACCIÓN DE PDF
+# 3. FUNCIONES DE EXTRACCIÓN DE PDF (OPTIMIZADA)
 # ============================================
 def parse_spanish_number(num_str):
     if not num_str:
@@ -341,12 +341,28 @@ def extract_data_from_pdf(pdf_file):
 
     lines = [line.strip() for line in text.split('\n') if line.strip()]
     
+    # 1. Extraer NIF primero para usarlo como ancla de seguridad si es necesario
+    nif_empresa_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z]\d{8})', text, re.IGNORECASE)
+    if nif_empresa_match:
+        data['nif'] = nif_empresa_match.group(1).strip()
+    else:
+        nif_empresa_match = re.search(r'\b([A-Z]\d{8})\b', text)
+        if nif_empresa_match:
+            data['nif'] = nif_empresa_match.group(1).strip()
+        else:
+            nif_dni_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*(\d{8}[A-Z])', text, re.IGNORECASE)
+            if nif_dni_match:
+                data['nif'] = nif_dni_match.group(1).strip()
+
+    # 2. Extracción ultrarrobusta de la Razón Social
     frases_excluidas = [
-        "en calidad de", "titular", "representante", "colaborador", "nif", "teléfono", 
-        "apellidos y nombre", "domiciliación", "ingresar", "banco", "caja", "cuenta", 
-        "entidad", "oficina", "importe", "ejercicio", "declaración"
+        "vía de entrada", "presentación", "por internet", "en calidad de", "titular", 
+        "representante", "colaborador", "nif", "teléfono", "apellidos y nombre", 
+        "domiciliación", "ingresar", "banco", "caja", "cuenta", "entidad", "oficina", 
+        "importe", "ejercicio", "declaración", "modelo 200", "página"
     ]
 
+    # Búsqueda principal por etiquetas oficiales de la AEAT
     for i, line in enumerate(lines):
         line_lower = line.lower()
         if "apellidos y nombre o razón social" in line_lower or "apellidos y nombre / razón social" in line_lower or "denominación social" in line_lower:
@@ -361,14 +377,31 @@ def extract_data_from_pdf(pdf_file):
             if data['empresa'] != 'Desconocida':
                 break
 
+    # Respaldo: buscar la línea inmediatamente anterior o posterior al NIF detectado
+    if data['empresa'] == 'Desconocida' and data['nif'] != 'Desconocido':
+        for i, line in enumerate(lines):
+            if data['nif'] in line:
+                for offset in [-1, 1, -2, 2]:
+                    if 0 <= i + offset < len(lines):
+                        posible = lines[i + offset].strip()
+                        posible_lower = posible.lower()
+                        es_excluida = any(excl in posible_lower for excl in frases_excluidas)
+                        if not posible.isdigit() and not es_excluida and len(posible) > 3 and data['nif'] not in posible:
+                            data['empresa'] = posible
+                            break
+                if data['empresa'] != 'Desconocida':
+                    break
+
+    # Respaldo final: buscar nombres societarios típicos en las primeras líneas
     if data['empresa'] == 'Desconocida':
-        for line in lines[:30]:
+        for line in lines[:40]:
             line_lower = line.lower()
             es_excluida = any(excl in line_lower for excl in frases_excluidas)
-            if ("s.l." in line_lower or "s.a." in line_lower or "sociedad" in line_lower or "ltda" in line_lower) and not es_excluida and len(line) > 4:
+            if ("s.l." in line_lower or "s.a." in line_lower or "sociedad" in line_lower or "ltda" in line_lower or "s.l.u." in line_lower) and not es_excluida and len(line) > 4:
                 data['empresa'] = line
                 break
 
+    # 3. Extraer Año del Ejercicio
     patrones_anio = [
         r'Ejercicio[\s\.\:\-]*?(20[12]\d)\b',
         r'Per[ií]odo impositivo[\s\S]{0,120}?\d{2}/\d{2}/(20[12]\d)',
@@ -394,18 +427,6 @@ def extract_data_from_pdf(pdf_file):
         fechas = [int(y) for y in re.findall(r'\d{2}/\d{2}/(20[12]\d)', first_pages_text) if 2015 <= int(y) <= 2030]
         if fechas:
             data['year'] = min(fechas)
-
-    nif_empresa_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z]\d{8})', text, re.IGNORECASE)
-    if nif_empresa_match:
-        data['nif'] = nif_empresa_match.group(1).strip()
-    else:
-        nif_empresa_match = re.search(r'\b([A-Z]\d{8})\b', text)
-        if nif_empresa_match:
-            data['nif'] = nif_empresa_match.group(1).strip()
-        else:
-            nif_dni_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*(\d{8}[A-Z])', text, re.IGNORECASE)
-            if nif_dni_match:
-                data['nif'] = nif_dni_match.group(1).strip()
 
     def get_val(casilla):
         pattern = rf"\b{casilla}\b.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"

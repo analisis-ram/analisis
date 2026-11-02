@@ -12,7 +12,7 @@ import openai
 st.set_page_config(
     page_title="Auditoría Financiera Senior | Modelo 200",
     page_icon="💼",
-    layout="wide", 
+    layout="wide", # Mantenemos WIDE para que el dashboard ocupe toda la pantalla
     initial_sidebar_state="expanded"
 )
 
@@ -42,6 +42,14 @@ st.markdown("""
         padding: 15px; 
         border-radius: 10px; 
     }
+
+    /* Flecha de inicio animada */
+    @keyframes pulse-arrow {
+        0% { transform: translateX(0); opacity: 1; }
+        50% { transform: translateX(-20px); opacity: 0.5; }
+        100% { transform: translateX(0); opacity: 1; }
+    }
+    .start-arrow { font-size: 80px; color: #3B82F6; animation: pulse-arrow 1.5s infinite; display: inline-block; }
 
     /* --- ESTILOS DEL MODAL DE CARGA (LOADER) --- */
     .loader-overlay {
@@ -302,11 +310,18 @@ if datos_empresa:
         st.stop()
 
 # ============================================
-# 8. PANTALLA DE INICIO (AHORA VACÍA - MODELO NUEVO)
+# 8. PANTALLA DE INICIO (CENTRADA CON FLEXBOX)
 # ============================================
 if not datos_empresa or len(datos_empresa) < 2:
-    # Se ha eliminado el bloque HTML de bienvenida.
-    # La pantalla se quedará en blanco (negra) esperando que se suban los archivos.
+    # Usamos flexbox con height: 80vh para centrar vertical y horizontalmente
+    st.markdown("""
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center;">
+            <h1 style="color: #3B82F6; font-size: 3.5rem; margin-bottom: 20px;">Sistema de Auditoría Senior</h1>
+            <p style="font-size: 1.3rem; color: #A0A0A0; margin-bottom: 40px;">Sube al menos 2 Modelos 200 de la misma empresa en el panel lateral.</p>
+            <div class="start-arrow">⬅️</div>
+            <p style="font-size: 1.1rem; color: #6B7280; margin-top: 30px;">Haz clic en "Browse files" o "Upload" en la barra de la izquierda</p>
+        </div>
+    """, unsafe_allow_html=True)
     st.stop()
 
 # ============================================

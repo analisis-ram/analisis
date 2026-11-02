@@ -5,6 +5,8 @@ import pdfplumber
 import re
 import time
 import openai
+import base64
+import os
 
 # ============================================
 # 1. CONFIGURACIÓN DE PÁGINA
@@ -17,10 +19,40 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS MEJORADO, ANIMACIONES Y MODAL CENTRAL
+# 2. CSS MEJORADO, ANIMACIONES, MODAL CENTRAL Y BARRA LATERAL NARANJA
 # ============================================
 st.markdown("""
 <style>
+    /* --- ESTILOS DE LA BARRA LATERAL (NARANJA VIVO) --- */
+    [data-testid="stSidebar"] {
+        background-color: #FF9800 !important; /* Naranja Vivo */
+    }
+    
+    /* Forzar que los textos de la barra lateral sean oscuros para contrastar con el naranja */
+    [data-testid="stSidebar"] h1, 
+    [data-testid="stSidebar"] h2, 
+    [data-testid="stSidebar"] h3, 
+    [data-testid="stSidebar"] p, 
+    [data-testid="stSidebar"] label, 
+    [data-testid="stSidebar"] span,
+    [data-testid="stSidebar"] .stMarkdown {
+        color: #1A1A1A !important;
+        font-weight: 600 !important;
+    }
+
+    /* Ajustar el fondo del área de subida de archivos para que se vea limpio */
+    [data-testid="stSidebar"] [data-testid="stFileUploadDropzone"] {
+        background-color: rgba(255, 255, 255, 0.85) !important;
+        border: 1px dashed #1A1A1A !important;
+    }
+    
+    /* Ajustar el input de la API Key */
+    [data-testid="stSidebar"] input {
+        color: #1A1A1A !important;
+        background-color: rgba(255, 255, 255, 0.9) !important;
+    }
+
+    /* --- ESTILOS GENERALES --- */
     .block-container { padding-top: 2rem; }
     [data-testid="collapsedControl"] { display: none !important; }
     [data-testid="stSidebarHeader"] button { display: none !important; }
@@ -65,7 +97,7 @@ st.markdown("""
         background-color: #262730;
         padding: 50px 80px;
         border-radius: 30px;
-        border-left: 15px solid #3B82F6;
+        border-left: 15px solid #FF9800; /* Borde del loader también naranja */
         box-shadow: 0 20px 50px rgba(0,0,0,0.8);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         width: 80vw; max-width: 1000px;
@@ -73,7 +105,7 @@ st.markdown("""
 
     .loader-icon-container {
         position: relative;
-        width: 200px; height: 200px; /* Ajustado para la imagen */
+        width: 200px; height: 200px;
         margin-bottom: 40px;
     }
 
@@ -87,23 +119,22 @@ st.markdown("""
     .animated-hammer {
         font-size: 120px;
         position: absolute;
-        top: -60px; left: -20px; /* Ajustado para golpear la esquina de la imagen */
+        top: -60px; left: -20px;
         z-index: 2;
         display: inline-block;
         animation: smash 0.8s infinite;
         transform-origin: bottom right;
     }
 
-    /* NUEVO: Estilo para la imagen del Modelo 200 */
+    /* Estilo para la imagen del Modelo 200 */
     .css-book-img {
-        width: 180px; /* Tamaño de la imagen */
+        width: 180px;
         height: auto;
         position: absolute;
         bottom: 0px; left: 0px;
         z-index: 1;
         border-radius: 12px;
         box-shadow: 10px 10px 25px rgba(0,0,0,0.8);
-        border: 1px solid #444; /* Un borde sutil por si la imagen es muy clara */
     }
 
     .loader-title { color: #FAFAFA; font-size: 42px; font-weight: bold; margin-bottom: 10px; }
@@ -173,7 +204,6 @@ def extract_data_from_pdf(pdf_file):
         'errores_acreedores': [] 
     }
 
-    # 1. EXTRAER AÑO DEL EJERCICIO
     year_match = re.search(r'EL\s*\d{1,2}\s*\d{1,2}\s*(\d{4})', text, re.IGNORECASE)
     if not year_match:
         year_match = re.search(r'Ejercicio\s*(\d{4})', text, re.IGNORECASE)
@@ -183,7 +213,6 @@ def extract_data_from_pdf(pdf_file):
     if year_match: 
         data['year'] = int(year_match.group(1))
 
-    # 2. EXTRAER NIF Y EMPRESA
     nif_match = re.search(r'Identificaci[oó]n[\s\S]*?NIF\s*([A-Z0-9]+)', text, re.IGNORECASE)
     if nif_match:
         data['nif'] = nif_match.group(1).strip()
@@ -202,7 +231,6 @@ def extract_data_from_pdf(pdf_file):
             if len(nombre) > 2:
                 data['empresa'] = nombre
 
-    # --- EXTRACCIÓN DE DATOS NUMÉRICOS ---
     def get_val(casilla):
         pattern = rf"{casilla}.*?(-?[\d\.]+,\d{{2}}|-?\d+)\b"
         match = re.search(pattern, text)
@@ -280,20 +308,28 @@ api_key = st.sidebar.text_input("API Key (OpenAI)", type="password")
 datos_empresa = []
 
 # ============================================
-# 6. PROCESAMIENTO CON EL LOADER CENTRAL (CON IMAGEN)
+# 6. PROCESAMIENTO CON EL LOADER CENTRAL (IMAGEN EN BASE64)
 # ============================================
+img_base64 = ""
+if os.path.exists("modelo200.png"):
+    with open("modelo200.png", "rb") as image_file:
+        img_base64 = base64.b64encode(image_file.read()).decode()
+
 if uploaded_files:
     for file in uploaded_files:
         loader_placeholder = st.empty()
         
-        # CAMBIO: Usamos una etiqueta <img> apuntando a tu archivo local "modelo200.png"
-        # Asegúrate de subir la imagen a tu GitHub con ese nombre exacto.
+        if img_base64:
+            imagen_html = f'<img src="data:image/png;base64,{img_base64}" class="css-book-img" alt="Modelo 200">'
+        else:
+            imagen_html = '<div style="width: 130px; height: 100px; background: linear-gradient(135deg, #3B82F6, #1E3A8A); color: white; font-size: 26px; font-weight: 900; display: flex; justify-content: center; align-items: center; border-radius: 6px 15px 15px 6px; box-shadow: 8px 8px 20px rgba(0,0,0,0.8); border-left: 15px solid #1E3A8A; position: absolute; bottom: 0px; left: 0px; z-index: 1;">MOD.<br>200</div>'
+
         loader_html = f"""
         <div class="loader-overlay">
             <div class="loader-card">
                 <div class="loader-icon-container">
                     <span class="animated-hammer">🔨</span>
-                    <img src="modelo200.png" class="css-book-img" alt="Modelo 200">
+                    {imagen_html}
                 </div>
                 <div class="loader-title">Auditando documento...</div>
                 <div class="loader-subtitle">{file.name}</div>
@@ -338,7 +374,7 @@ if datos_empresa:
 if not datos_empresa or len(datos_empresa) < 2:
     st.markdown("""
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center;">
-            <h1 style="color: #3B82F6; font-size: 3.5rem; margin-bottom: 20px;">Sistema de Auditoría Senior</h1>
+            <h1 style="color: #FF9800; font-size: 3.5rem; margin-bottom: 20px;">Sistema de Auditoría Senior</h1>
             <p style="font-size: 1.3rem; color: #A0A0A0; margin-bottom: 40px;">Sube al menos 2 Modelos 200 de la misma empresa en el panel lateral.</p>
             <div class="start-arrow">⬅️</div>
             <p style="font-size: 1.1rem; color: #6B7280; margin-top: 30px;">Haz clic en "Browse files" o "Upload" en la barra de la izquierda</p>
@@ -361,7 +397,6 @@ b2_status_ok = (accionistas_1 == accionistas_2 == accionistas_3)
 hay_errores_acreedores = any(len(d['errores_acreedores']) > 0 for d in datos_empresa)
 
 st.title("💼 Informe de Auditoría Financiera y Riesgo")
-# ENCABEZADO CORREGIDO
 st.markdown(f"**Empresa:** {nombre_empresa} | **NIF:** {nif_empresa} | **Periodo analizado:** {years[0]} - {years[-1]}")
 st.markdown("---")
 

@@ -1,7 +1,5 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 import pdfplumber
 import re
 import openai
@@ -17,7 +15,7 @@ st.set_page_config(
 )
 
 # ============================================
-# 2. CSS PERSONALIZADO (ESTÉTICA PROFESIONAL Y ARCHIVOS COMPACTOS)
+# 2. CSS MEJORADO (CAJETÍN CON SCROLL FLUIDO Y ARCHIVOS COMPACTOS)
 # ============================================
 st.markdown("""
 <style>
@@ -25,6 +23,7 @@ st.markdown("""
     [data-testid="stSidebar"] { 
         background-color: #F8B155 !important; 
     }
+    
     [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2, [data-testid="stSidebar"] h3, 
     [data-testid="stSidebar"] p, [data-testid="stSidebar"] label, [data-testid="stSidebar"] span,
     [data-testid="stSidebar"] .stMarkdown {
@@ -36,89 +35,152 @@ st.markdown("""
         background-color: #FFFFFF !important;
         border: 1px solid #D97706 !important;
     }
+
+    /* --- ESTILO DEL BOTÓN DE BORRAR --- */
     [data-testid="stSidebar"] button[kind="primary"], .main button[kind="primary"] {
         font-weight: 900 !important; 
         font-size: 16px !important;  
         border-radius: 8px !important;
         padding: 10px !important;
     }
+    [data-testid="stSidebar"] button[kind="primary"] p, .main button[kind="primary"] p {
+        font-weight: 900 !important;
+        font-size: 16px !important;
+    }
 
-    /* --- CONTENEDOR DE SUBIDA DE ARCHIVOS COMPACTO --- */
+    /* ==========================================================
+        ESTILOS DEL CAJETÍN DE SUBIDA Y ARCHIVOS COMPACTOS
+        ========================================================== */
     [data-testid="stFileUploader"] label p {
         font-size: 16px !important;
         font-weight: 700 !important;
         color: #FAFAFA !important;
         margin-bottom: 8px !important;
     }
+
+    /* Contenedor del área de arrastre */
     [data-testid="stFileUploaderDropzone"],
     [data-testid="stFileUploadDropzone"],
     section[data-testid="stFileUploaderDropzone"] {
-        background-color: #14161F !important;
-        border: 2px dashed #F8B155 !important;
-        border-radius: 12px !important;
-        padding: 15px !important;
+        background-color: #F8B155 !important;
+        border: 3px dashed #262730 !important;
+        border-radius: 16px !important;
+        padding: 20px !important;
         display: flex !important;
         flex-direction: column !important;
         align-items: stretch !important;
         justify-content: flex-start !important;
-        min-height: 240px !important;
-        max-height: 350px !important;
+        min-height: 260px !important;
+        max-height: 380px !important;
         overflow-y: auto !important;
     }
-    [data-testid="stFileUploaderDropzone"]::-webkit-scrollbar { width: 6px; }
-    [data-testid="stFileUploaderDropzone"]::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); border-radius: 3px; }
-    [data-testid="stFileUploaderDropzone"]::-webkit-scrollbar-thumb { background: #F8B155; border-radius: 3px; }
-    [data-testid="stFileUploaderDropzoneInstructions"] { display: none !important; }
-    [data-testid="stFileUploaderDropzone"] button svg { display: none !important; }
-    
+
+    /* Scroll personalizado elegante */
+    [data-testid="stFileUploaderDropzone"]::-webkit-scrollbar {
+        width: 6px;
+    }
+    [data-testid="stFileUploaderDropzone"]::-webkit-scrollbar-track {
+        background: rgba(0, 0, 0, 0.05);
+        border-radius: 3px;
+    }
+    [data-testid="stFileUploaderDropzone"]::-webkit-scrollbar-thumb {
+        background: #262730;
+        border-radius: 3px;
+    }
+
+    [data-testid="stFileUploaderDropzoneInstructions"] {
+        display: none !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] button svg {
+        display: none !important;
+    }
+
+    /* Botón interno para añadir más archivos */
     [data-testid="stFileUploaderDropzone"] button,
     [data-testid="stFileUploadDropzone"] button {
-        background-color: #F8B155 !important;
-        color: #14161F !important;
-        border: 2px solid #D97706 !important;
+        background-color: #3B82F6 !important;
+        color: #FFFFFF !important;
+        border: 2px solid #1E3A8A !important;
         border-radius: 8px !important;
-        padding: 0 16px !important;
-        min-width: 140px !important;
-        height: 38px !important;
+        padding: 0 20px !important;
+        min-width: 220px !important;
+        height: 42px !important;
         font-weight: 800 !important;
-        font-size: 13px !important;
-        margin: 6px auto !important;
+        font-size: 14px !important;
+        white-space: nowrap !important;
+        margin: 8px auto !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        box-shadow: 0 2px 6px rgba(248, 177, 85, 0.3) !important;
-    }
-    [data-testid="stFileUploaderDropzone"] button div,
-    [data-testid="stFileUploaderDropzone"] button span { font-size: 0 !important; }
-    [data-testid="stFileUploaderDropzone"] button::after {
-        content: "+ Añadir más";
-        font-size: 13px !important;
-        font-weight: 800 !important;
-        color: #14161F !important;
+        box-shadow: 0 4px 10px rgba(59, 130, 246, 0.4) !important;
+        visibility: visible !important;
+        flex-shrink: 0 !important;
     }
 
-    /* --- TARJETAS DE ARCHIVOS SUBIDOS EN MINIATURA --- */
-    [data-testid="stFileUploader"] [data-testid="stUploadedFile"] {
-        background-color: #1F2937 !important;
+    [data-testid="stFileUploaderDropzone"] button div,
+    [data-testid="stFileUploaderDropzone"] button span {
+        font-size: 0 !important;
+    }
+    
+    [data-testid="stFileUploaderDropzone"] button::after {
+        content: "Añadir más archivos";
+        font-size: 14px !important;
+        font-weight: 800 !important;
+        color: #FFFFFF !important;
+        white-space: nowrap !important;
+    }
+
+    [data-testid="stFileUploaderDropzone"] button:hover {
+        background-color: #2563EB !important;
+        border-color: #1E3A8A !important;
+    }
+
+    /* ==========================================================
+        REDUCCIÓN DE TAMAÑO DE LOS ARCHIVOS SUBIDOS (PILLS/ITEMS)
+        ========================================================== */
+    /* Tarjetas individuales de archivos subidos */
+    [data-testid="stFileUploader"] [data-testid="stUploadedFile"],
+    section[data-testid="stFileUploader"] div[data-testid="stUploadedFile"] {
+        background-color: #1f2937 !important;
         border: 1px solid #374151 !important;
-        border-radius: 6px !important;
-        padding: 4px 8px !important;
-        margin-bottom: 5px !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        margin-bottom: 6px !important;
+        min-height: unset !important;
         height: auto !important;
     }
+
+    /* Texto del nombre del archivo y tamaño en miniatura */
     [data-testid="stFileUploader"] [data-testid="stUploadedFile"] span,
     [data-testid="stFileUploader"] [data-testid="stUploadedFile"] p {
         color: #F9FAFB !important;
-        font-size: 11px !important;
+        font-size: 12px !important;
         font-weight: 600 !important;
     }
+
+    /* Icono del archivo dentro de la lista muy pequeño */
     [data-testid="stFileUploader"] [data-testid="stUploadedFile"] svg {
-        width: 14px !important;
-        height: 14px !important;
+        width: 16px !important;
+        height: 16px !important;
         fill: #F8B155 !important;
     }
 
-    /* --- BOTÓN DE ACCIÓN --- */
+    /* Botón de eliminar (la "X") de cada archivo en miniatura */
+    [data-testid="stFileUploader"] [data-testid="stUploadedFile"] button {
+        background-color: transparent !important;
+        border: none !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        padding: 0 !important;
+    }
+    [data-testid="stFileUploader"] [data-testid="stUploadedFile"] button svg {
+        width: 14px !important;
+        height: 14px !important;
+        fill: #EF4444 !important;
+    }
+
+    /* --- ESTILOS DEL BOTÓN DE ACCIÓN PRINCIPAL --- */
     .stButton > button {
         background-color: #F8B155 !important;
         color: #14161F !important;
@@ -129,8 +191,13 @@ st.markdown("""
         border: 3px solid #14161F !important;
         width: 100% !important;
         box-shadow: 0 8px 20px rgba(248, 177, 85, 0.4) !important;
+        transition: 0.3s;
     }
-    .stButton > button:hover { background-color: #F59E0B !important; transform: translateY(-2px); }
+    .stButton > button:hover {
+        background-color: #F59E0B !important;
+        transform: translateY(-2px);
+    }
+
     .block-container { padding-top: 2rem; }
     [data-testid="collapsedControl"] { display: none !important; }
     [data-testid="stSidebarHeader"] button { display: none !important; }
@@ -140,7 +207,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ============================================
-# 3. FUNCIONES DE EXTRACCIÓN Y UTILIDADES
+# 3. FUNCIONES DE EXTRACCIÓN DE PDF Y EXCEL
 # ============================================
 def parse_spanish_number(num_str):
     if not num_str:
@@ -153,7 +220,7 @@ def parse_spanish_number(num_str):
 def extract_data_from_pdf(pdf_file):
     text = ""
     with pdfplumber.open(pdf_file) as pdf:
-        for page in pdf.pages:
+        for idx, page in enumerate(pdf.pages):
             extracted = page.extract_text()
             if extracted:
                 text += extracted + "\n"
@@ -244,7 +311,7 @@ if st.session_state.datos_empresa is not None:
         st.rerun()
 
 # ============================================
-# 5. PANTALLA DE CARGA DE ARCHIVOS
+# 5. PANTALLA PRINCIPAL: SUBIDA DE ARCHIVOS
 # ============================================
 if st.session_state.datos_empresa is None:
     st.markdown("""
@@ -257,7 +324,7 @@ if st.session_state.datos_empresa is None:
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
         uploaded_files = st.file_uploader(
-            "Selecciona archivos PDF y Excel", 
+            "Arrastra aquí tus archivos", 
             type=["pdf", "xlsx", "xls"], 
             accept_multiple_files=True, 
             key=f"uploader_{st.session_state.uploader_key}"
@@ -312,7 +379,7 @@ datos_empresa = st.session_state.datos_empresa
 excel_data = st.session_state.excel_data
 
 # ============================================
-# 6. CREACIÓN DINÁMICA DE SOLAPAS SUPERIORES
+# 6. CREACIÓN DINÁMICA DE SOLAPAS (WEB TABS)
 # ============================================
 tabs_labels = ["📊 Dashboard Financiero e Informe IA"]
 if excel_data:
@@ -366,62 +433,13 @@ with creanted_tabs[0]:
                     st.markdown(f'<div class="ai-report" style="background:#1e2937; padding:20px; border-radius:10px; color:white;">{ai_text}</div>', unsafe_allow_html=True)
 
 # --------------------------------------------
-# SOLAPAS DINÁMICAS CON GRÁFICOS INTEGRADOS
-# --------------------------------------------
+# SOLAPAS DINÁMICAS (CADA HOJA DE LOS EXCEL ADJUNTOS)
+# ============================================
 if excel_data:
     for idx, (sheet_name, df_sheet) in enumerate(excel_data.items(), start=1):
         with creanted_tabs[idx]:
-            st.header(f"📑 {sheet_name}")
+            st.header(f"Contenido de la hoja de Excel: {sheet_name}")
             st.markdown("---")
-            
-            # --- INTEGRACIÓN DE GRÁFICOS ESPECÍFICOS SEGÚN LA SOLAPA ---
-            sheet_lower = sheet_name.lower()
-            
-            # 1. GRÁFICO PARA UMBRAL DE RENTABILIDAD
-            if 'umbral' in sheet_lower:
-                st.subheader("📊 Análisis Gráfico: Umbral de Rentabilidad (Punto Muerto)")
-                try:
-                    # Intentamos extraer datos numéricos de la hoja Umbral si tienen estructura estándar
-                    fig_umbral = go.Figure()
-                    fig_umbral.add_trace(go.Scatter(x=['Mes 1', 'Mes 3', 'Mes 6', 'Mes 9', 'Mes 12'], 
-                                                    y=[200000, 500000, 900000, 1200000, 1500000],
-                                                    mode='lines+markers', name='Ventas Acumuladas', line=dict(color='#3B82F6', width=3)))
-                    fig_umbral.add_trace(go.Scatter(x=['Mes 1', 'Mes 3', 'Mes 6', 'Mes 9', 'Mes 12'], 
-                                                    y=[370000, 370000, 370000, 370000, 370000],
-                                                    mode='lines', name='Costes Fijos Totales', line=dict(color='#EF4444', width=2, dash='dash')))
-                    fig_umbral.update_layout(title="Evolución de Ventas vs Costes Fijos", xaxis_title="Periodo", yaxis_title="Euros (€)", template="plotly_dark")
-                    st.plotly_chart(fig_umbral, use_container_width=True)
-                except Exception as e:
-                    st.info("Visualización general disponible en tabla inferior.")
-
-            # 2. GRÁFICO PARA CICLO MEDIO DE MADURACIÓN (FON.MAN)
-            elif 'fon.man' in sheet_lower or 'maduracion' in sheet_lower:
-                st.subheader("📈 Análisis Gráfico: Ciclo Medio de Maduración y Plazos")
-                try:
-                    # Datos representativos del ciclo medio
-                    fases = ['Almacén / Producción', 'Fabricación', 'Cobro Clientes', 'Pago Proveedores']
-                    dias = [45, 30, 55, 40]
-                    fig_ciclo = px.bar(x=fases, y=dias, title="Días por Fase del Ciclo de Maduración",
-                                       labels={'x': 'Fase', 'y': 'Días'}, color=dias, color_continuous_scale='sunset')
-                    fig_ciclo.update_layout(template="plotly_dark")
-                    st.plotly_chart(fig_ciclo, use_container_width=True)
-                except Exception as e:
-                    st.info("Datos tabulares detallados a continuación.")
-
-            # 3. GRÁFICO PARA CUENTA DE EXPLOTACIÓN / RESULTADOS
-            elif 'exp' in sheet_lower or 'explotación' in sheet_lower:
-                st.subheader("📊 Estructura de Ingresos y Gastos de Explotación")
-                try:
-                    categorias = ['Ingresos / Ventas', 'Aprovisionamientos', 'Gastos de Personal', 'Amortización', 'Resultado Explotación']
-                    valores = [1200000, 550000, 300000, 80000, 270000]
-                    fig_exp = px.pie(names=categorias, values=valores, title="Distribución de Masas de Explotación", hole=0.4)
-                    fig_exp.update_layout(template="plotly_dark")
-                    st.plotly_chart(fig_exp, use_container_width=True)
-                except Exception as e:
-                    pass
-
-            st.markdown("---")
-            st.subheader("📋 Datos Detallados de la Hoja")
             st.dataframe(df_sheet, use_container_width=True)
 
 # ============================================
@@ -430,6 +448,6 @@ if excel_data:
 st.markdown("---")
 st.markdown("""
 <div style='text-align: center; color: #6B7280; font-size: 12px;'>
-    <p>TODO MODELO 200 | Análisis Financiero Profesional e Inteligencia Artificial.</p>
+    <p>TODO MODELO 200 | Desarrollado con estándares profesionales de análisis financiero.</p>
 </div>
 """, unsafe_allow_html=True)
